@@ -20,7 +20,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@cgticketingproject/common": "^1.0.11",
+    "@cgecommerceproject/common": "^1.0.0",
     "@types/cookie-session": "^2.0.44",
     "@types/jsonwebtoken": "^9.0.2",
     "cookie-session": "^2.0.0",

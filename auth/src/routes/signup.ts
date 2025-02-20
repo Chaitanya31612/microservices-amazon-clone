@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
-import { BadRequestError, validateRequest } from "@cgticketingproject/common";
+import { BadRequestError, validateRequest } from "@cgecommerceproject/common";
 import { User } from "../models/user";
 
 const router = express.Router();

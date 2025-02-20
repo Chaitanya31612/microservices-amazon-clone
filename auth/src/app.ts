@@ -4,7 +4,7 @@ import morgan from "morgan";
 import "express-async-errors";
 import cookieSession from "cookie-session";
 
-import { NotFoundError, errorHandler } from "@cgticketingproject/common";
+import { NotFoundError, errorHandler } from "@cgecommerceproject/common";
 import { currentUserRouter } from "./routes/currentUser";
 import { signinRouter } from "./routes/signin";
 import { signoutRouter } from "./routes/signout";

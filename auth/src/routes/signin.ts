@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
-import { validateRequest, BadRequestError } from "@cgticketingproject/common";
+import { validateRequest, BadRequestError } from "@cgecommerceproject/common";
 
 import { User } from "../models/user";
 import { Password } from "../services/password";
