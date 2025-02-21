@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 // express-async-errors package is used, if we throw error inside async function, it will be caught by express and passed to error handler middleware
 import "express-async-errors";
@@ -32,7 +32,9 @@ app.all("*", () => {
 });
 
 // catch errors from our app router
-// app.use(errorHandler);
+app.use((err: Error, req: Request, res: Response, next: NextFunction): void => {
+  errorHandler(err, req, res, next);
+});
 
 export { app };
 

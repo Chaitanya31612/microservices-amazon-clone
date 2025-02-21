@@ -3,14 +3,18 @@ import { Password } from "../services/password";
 
 // An interface that describes the properties that are required to create a new User
 interface UserAttrs {
+  username: string;
   email: string;
   password: string;
+  role: string;
 }
 
 // An interface that describes the properties that a User document has
 interface UserDoc extends Document {
+  username: string;
   email: string;
   password: string;
+  role: string;
 }
 
 // interface to describe properties that a User model has
@@ -20,11 +24,19 @@ interface UserModel extends Model<UserDoc> {
 
 const userSchema: Schema = new Schema(
   {
+    username: {
+      type: String,
+      required: true,
+    },
     email: {
       type: String,
       required: true,
     },
     password: {
+      type: String,
+      required: true,
+    },
+    role: {
       type: String,
       required: true,
     },

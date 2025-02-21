@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { body, validationResult } from "express-validator";
+import { body } from "express-validator";
 
 import { validateRequest, BadRequestError } from "@cgecommerceproject/common";
 
@@ -43,6 +43,8 @@ router.post(
       {
         id: existingUser.id,
         email: existingUser.email,
+        username: existingUser.username,
+        role: existingUser.role,
       },
       process.env.JWT_KEY!
     );
