@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products
+  template:
+    metadata:
+      labels:
+        app: products
+    spec:
+      containers:
+      - name: products
+        image: chaitanya31/products
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://products-postgres-srv:5432/products_db
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: POSTGRES_USERNAME
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: POSTGRES_PASSWORD
+        - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+          value: "update"
+        - name: SPRING_JPA_SHOW_SQL
+          value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-srv
+spec:
+  selector:
+    app: products
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+# ❯ kubectl create secret generic products-secrets \
+#   --from-literal=POSTGRES_USERNAME=testuser \
+#   --from-literal=POSTGRES_PASSWORD=test

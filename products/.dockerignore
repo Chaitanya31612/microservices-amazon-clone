@@ -1,0 +1,31 @@
+# Maven
+target/
+!target/*.jar
+*.class
+*.log
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Git
+.git/
+.gitignore
+
+# Misc
+README.md
+*.md
+.DS_Store
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+application-*.properties
+application-*.yml
+!application.properties
+!application.yml
