@@ -43,7 +43,3 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-
-# ❯ kubectl create secret generic products-secrets \
-#   --from-literal=POSTGRES_USERNAME=testuser \
-#   --from-literal=POSTGRES_PASSWORD=test
