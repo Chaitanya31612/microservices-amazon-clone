@@ -1,17 +1,9 @@
 package com.cgecommerce.products.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "products")
-//@Data
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@Builder
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,7 +74,7 @@ public class Product {
     public void setStock(Integer stock) {
         this.stock = stock;
     }
-//    private String image;
-//    private Long userId; // Foreign key to User Service
+    // private String image;
+    // private Long userId; // Foreign key to User Service
 
 }

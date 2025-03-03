@@ -25,7 +25,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         Cookie[] cookies = request.getCookies();
         String sessionCookieValue = null;
 
@@ -39,18 +40,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
         System.out.println("session cookie value - " + sessionCookieValue);
 
-        if(sessionCookieValue != null) {
+        if (sessionCookieValue != null) {
             try {
                 UserPrincipal userPrincipal = authService.getCurrentUser(sessionCookieValue).block();
                 System.out.println("UserPrincipal is " + userPrincipal);
 
-                if(userPrincipal != null) {
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userPrincipal,
-                                    null,
-                                    userPrincipal.getAuthorities()
-                            );
+                if (userPrincipal != null) {
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userPrincipal,
+                            null,
+                            userPrincipal.getAuthorities());
 
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
