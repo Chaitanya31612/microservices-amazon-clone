@@ -1,24 +1,54 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    font-family: "SF-Mono", sans-serif;
   }
+  /* @font-face {
+    font-family: 'Arial', sans-serif;
+  } */
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .bg-amazon_blue {
+    --tw-bg-opacity: 1;
+    background-color: rgba(19, 25, 33, var(--tw-bg-opacity)) /* #131921 */;
+  }
+
+  .bg-amazon_blue-light {
+    --tw-bg-opacity: 1;
+    background-color: rgba(35, 47, 62, var(--tw-bg-opacity)); /* #232f3e */
+  }
+
+  .link {
+    @apply cursor-pointer hover:underline;
+  }
+
+  .outline-yellow input:focus {
+    outline-color: #f3a847;
+  }
+
+  .button {
+    @apply p-2 text-xs md:text-sm bg-gradient-to-b from-yellow-200 to-yellow-400 border border-yellow-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 active:from-yellow-500;
+  }
+
+  .not-allowed-button {
+    @apply p-2 text-xs md:text-sm bg-gradient-to-b from-gray-400 to-gray-600 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-500 active:from-gray-500 cursor-not-allowed text-white;
+  }
+
+  .button-gray {
+    @apply p-2 text-xs md:text-sm bg-gray-400 border border-gray-500 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-500;
+  }
+
+  .z-100 {
+    z-index: 100;
+  }
+
+  .whitespace-breakspaces {
+    white-space: break-spaces;
+  }
+
+  .cart-item {
+    @apply flex flex-col sm:grid grid-cols-5;
+  }
 }

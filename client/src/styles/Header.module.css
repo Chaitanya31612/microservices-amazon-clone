@@ -1,0 +1,14 @@
+.borderOutline:hover {
+  border: .5px solid white !important;
+  padding: calc(.5rem - .8px);
+  backface-visibility: hidden;
+  cursor: pointer;
+}
+
+.borderOutlineSm:hover {
+  border: .5px solid white !important;
+  padding: calc(.25rem - .8px);
+  backface-visibility: hidden;
+  cursor: pointer;
+}
+
