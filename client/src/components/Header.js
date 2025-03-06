@@ -69,7 +69,7 @@ const Header = () => {
             className={`focus:outline-none p-2 h-full w-6 flex-grow flex-shrink px-4 bg-white hover:bg-gray-100`}
           />
           <button className="focus:outline-none" type="submit">
-            <SearchIcon className="h-12 p-4" />
+            <SearchIcon className="h-12 p-4 cursor-pointer" />
           </button>
         </form>
 
