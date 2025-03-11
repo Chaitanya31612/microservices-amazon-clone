@@ -47,7 +47,7 @@ const Header = () => {
           <div className="flex items-center">
             <LocationMarkerIcon className="h-5" />
             <p className={"font-bold md:text-sm"}>
-              "Select Address"
+              Select Address
               {/* {session ? `Sonipat, India` : "Select Address"} */}
             </p>
           </div>
@@ -80,7 +80,9 @@ const Header = () => {
           {/* <div onClick={!session ? signIn : signOut} className={`link`}>
             <p>Hello, {session ? `${session.user.name}` : "Sign In"}</p> */}
           <div className={`link`}>
-            <p>Hello, Sign In</p>
+            <Link href="/auth/signin">
+              <p>Hello, Sign In</p>
+            </Link>
             {/* </div> */}
             <p className={"font-bold md:text-sm"}>Account & Lists</p>
           </div>
