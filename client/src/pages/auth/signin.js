@@ -21,6 +21,8 @@ export default function SignIn() {
     e.preventDefault();
     console.log("Sign in attempt with:", { email, password });
     doRequest();
+    if (!errors.length) {
+    }
   };
 
   return (

@@ -10,6 +10,7 @@ import {
 // import { signIn, signOut, useSession } from "next-auth/client";
 import { useRouter } from "next/router";
 import headerStyles from "../styles/Header.module.css";
+import { useUser } from "@/context/UserContext";
 // import { useSelector } from "react-redux";
 // import { selectItems } from "../slices/basketSlice";
 
@@ -17,9 +18,15 @@ const Header = () => {
   // const [session] = useSession();
   // const router = useRouter();
   // const items = useSelector(selectItems);
+  const { currentUser, loading } = useUser();
+
+  if (loading) {
+    return <h1>Loading...</h1>;
+  }
 
   return (
     <header className="sticky top-0 z-50">
+      {console.log(currentUser)}
       {/* Top Nav */}
       <div className="sticky top-0 z-50 flex items-center bg-amazon_blue p-1 py-2 flex-grow">
         <div
