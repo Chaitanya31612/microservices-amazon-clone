@@ -18,11 +18,7 @@ const Header = () => {
   // const [session] = useSession();
   // const router = useRouter();
   // const items = useSelector(selectItems);
-  const { currentUser, loading } = useUser();
-
-  if (loading) {
-    return <h1>Loading...</h1>;
-  }
+  const { currentUser } = useUser();
 
   return (
     <header className="sticky top-0 z-50">
@@ -46,10 +42,9 @@ const Header = () => {
           className={`hidden sm:inline text-xs text-white mx-4 p-2 ${headerStyles.borderOutline}`}
         >
           <p>
-            Hello
-            {/* {session
-              ? `Deliver to ${session.user.name.split(" ")[0]}`
-              : "Hello"} */}
+            {currentUser
+              ? `Deliver to ${currentUser.username.split(" ")[0]}`
+              : "Hello"}
           </p>
           <div className="flex items-center">
             <LocationMarkerIcon className="h-5" />
@@ -87,11 +82,22 @@ const Header = () => {
           {/* <div onClick={!session ? signIn : signOut} className={`link`}>
             <p>Hello, {session ? `${session.user.name}` : "Sign In"}</p> */}
           <div className={`link`}>
-            <Link href="/auth/signin">
-              <p>Hello, Sign In</p>
-            </Link>
+            {currentUser ? (
+              <>
+                <Link href="/auth/signout">
+                  <p>Hello, {currentUser.username}</p>
+                </Link>
+                <p className={"font-bold md:text-sm"}>Signout</p>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/signin">
+                  <p>Hello, Sign In</p>
+                </Link>
+                <p className={"font-bold md:text-sm"}>Account & Lists</p>
+              </>
+            )}
             {/* </div> */}
-            <p className={"font-bold md:text-sm"}>Account & Lists</p>
           </div>
 
           <div

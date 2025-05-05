@@ -5,6 +5,7 @@ import Image from "next/image";
 import useRequest from "@/hooks/useRequest";
 import { useRouter } from "next/router";
 import ErrorAlert from "@/components/ErrorAlert";
+import { useUser } from "@/context/UserContext";
 
 export default function SignIn() {
   const router = useRouter();
@@ -14,15 +15,15 @@ export default function SignIn() {
     url: "/api/users/signin",
     method: "post",
     body: { email, password },
-    onSuccess: () => router.push("/"),
+    onSuccess: () => {
+      window.location.href = "/"; // Redirect to root route
+    },
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Sign in attempt with:", { email, password });
     doRequest();
-    if (!errors.length) {
-    }
   };
 
   return (
