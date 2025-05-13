@@ -23,7 +23,7 @@ public class SecurityConfig {
         System.out.println("In the security filter chain");
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         // POST, PUT, DELETE for products require SELLER role
                         .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyRole("SELLER", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyRole("SELLER", "ADMIN")

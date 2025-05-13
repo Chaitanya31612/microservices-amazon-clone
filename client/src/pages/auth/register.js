@@ -29,7 +29,9 @@ export default function Register() {
       password: formData.password,
       role: formData.role,
     },
-    onSuccess: () => router.push("/"),
+    onSuccess: () => {
+      window.location.href = "/"; // Redirect to root route
+    },
   });
 
   const handleChange = (e) => {

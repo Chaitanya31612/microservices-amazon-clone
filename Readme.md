@@ -11,6 +11,8 @@ OR
 7. run `minikube delete` to delete the cluster
 8. run `minikube addons list` to see the addons installed
 
+9. type `thisisunsafe` in the browser if you see not secure warning
+
 ## Creating secret in kube cluster
 
 1. Create a secret in the cluster using the command `kubectl create secret generic jwt-secret --from-literal=JWT_KEY=your_secret_key`
