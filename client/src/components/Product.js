@@ -42,16 +42,25 @@ const Product = ({
   // };
 
   return (
-    <div className={"relative flex flex-col m-5 bg-white p-10 z-30"}>
+    <div
+      className={"relative flex flex-col justify-evenly m-5 bg-white p-10 z-30"}
+    >
       <p className="absolute top-2 right-2 text-xs italic text-gray-400">
         {category}
       </p>
 
-      <Image src={image} width={200} height={200} objectFit={"contain"} />
+      <Image
+        className={"self-center"}
+        src={image}
+        width={200}
+        height={200}
+        objectFit={"contain"}
+      />
 
-      <h4 className={"my-3"}>{title}</h4>
+      <div className={"flex flex-col"}>
+        <h4 className={"my-3"}>{title}</h4>
 
-      {/* <div className="flex">
+        {/* <div className="flex">
         {Array(rating)
           .fill()
           .map((_, index) => (
@@ -59,17 +68,18 @@ const Product = ({
           ))}
       </div> */}
 
-      <p className={"text-xs my-2 line-clamp-2"}>{description}</p>
+        <p className={"text-xs my-2 line-clamp-2"}>{description}</p>
 
-      <div className="mb-5">
-        {new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-        }).format(price)}
+        <div className="mb-5">
+          {new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+          }).format(price)}
+        </div>
+
+        {/* <button onClick={() => addItemToBasket()} className={'mt-auto button'}>Add to Cart</button> */}
+        <button className={"mt-auto button cursor-pointer"}>Add to Cart</button>
       </div>
-
-      {/* <button onClick={() => addItemToBasket()} className={'mt-auto button'}>Add to Cart</button> */}
-      <button className={"mt-auto button"}>Add to Cart</button>
     </div>
   );
 };
