@@ -11,20 +11,24 @@ public class Product {
 
     private String title;
     private Double price;
+    @Column(length = 1000)
     private String description;
     private String category;
-    private Integer stock;
+    private String image;
+
+    @Version
+    private Integer version;
 
     public Product() {
     }
 
-    public Product(Long id, String title, Double price, String description, String category, Integer stock) {
+    public Product(Long id, String title, Double price, String description, String category, String image) {
         this.id = id;
         this.title = title;
         this.price = price;
         this.description = description;
         this.category = category;
-        this.stock = stock;
+        this.image = image;
     }
 
     public Long getId() {
@@ -67,14 +71,15 @@ public class Product {
         this.category = category;
     }
 
-    public Integer getStock() {
-        return stock;
+    public String getImage() {
+        return image;
     }
 
-    public void setStock(Integer stock) {
-        this.stock = stock;
+    public void setImage(String image) {
+        this.image = image;
     }
-    // private String image;
+
+    // private Integer stock;
     // private Long userId; // Foreign key to User Service
 
 }

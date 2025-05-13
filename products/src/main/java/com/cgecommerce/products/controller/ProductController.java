@@ -37,4 +37,10 @@ public class ProductController {
     public void deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
     }
+
+    @PostMapping("/seed")
+    public void seedProducts() {
+        System.out.println("Seeding products...");
+        productService.seedProducts();
+    }
 }
