@@ -43,14 +43,16 @@ const Product = ({
 
   return (
     <div
-      className={"relative flex flex-col justify-evenly m-5 bg-white p-10 z-30"}
+      className={
+        "relative flex flex-col justify-between m-5 bg-white p-10 z-30"
+      }
     >
       <p className="absolute top-2 right-2 text-xs italic text-gray-400">
         {category}
       </p>
 
       <Image
-        className={"self-center"}
+        className={"self-center m-auto"}
         src={image}
         width={200}
         height={200}
