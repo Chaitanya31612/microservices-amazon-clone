@@ -32,3 +32,11 @@ build:
         manual:
           - src: "src/**/*.js"
             dest: .
+    - image: chaitanya31/cart
+      context: cart
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "**/*.go"
+            dest: .

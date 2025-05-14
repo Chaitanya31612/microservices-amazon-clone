@@ -27,6 +27,13 @@ spec:
             port:
               number: 8080
       - pathType: Prefix
+        path: /api/cart/?(.*)
+        backend:
+          service:
+            name: cart-srv
+            port:
+              number: 8080
+      - pathType: Prefix
         path: /?(.*)
         backend:
           service:
