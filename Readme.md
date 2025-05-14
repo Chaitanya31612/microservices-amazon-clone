@@ -109,3 +109,58 @@ The Products service manages product data and operations. It is built using Spri
 ### Security
 - JWTs are used for secure API access.
 - Ensure the `products-secrets` are configured in the Kubernetes cluster for database credentials.
+
+## Cart Service Documentation
+
+### Overview
+The Cart service is responsible for managing the shopping cart functionality within the application. It is built using Go and leverages Redis for data storage.
+
+### Key Features
+- RESTful API for cart management.
+- Integration with Redis for fast data access and storage.
+- Middleware for logging requests and responses.
+
+### Setup and Installation
+
+1. **Dependencies**: The service relies on several Go packages, including:
+   - `github.com/go-redis/redis/v8` for Redis client operations.
+   - `github.com/google/uuid` for generating unique cart IDs.
+   - `github.com/gorilla/mux` for HTTP request routing.
+
+2. **Build Configuration**:
+   - The service is containerized using Docker. The `Dockerfile` is configured to build the Go application and run it in an Alpine Linux container.
+
+3. **Environment Setup**:
+   - Ensure you have Docker installed and running on your machine.
+   - The service is configured to connect to a Redis instance running at `cart-redis-srv:6379`.
+
+4. **Running the Service**:
+   - Build and run the Docker container using the provided `Dockerfile`.
+   - The service listens on port `8080` for incoming HTTP requests.
+
+### Security
+- Ensure that the Redis instance is secured and only accessible by the Cart service.
+- Consider using environment variables for sensitive configurations, such as Redis connection details.
+
+### API Endpoints
+- `GET /api/cart/health`: Check the health status of the service.
+- `GET /api/cart/{user_id}`: Retrieve the cart for a specific user.
+- `POST /api/cart/{user_id}/items`: Add an item to the user's cart.
+- `PUT /api/cart/{user_id}/items/{product_id}`: Update the quantity of an item in the cart.
+- `DELETE /api/cart/{user_id}/items/{product_id}`: Remove an item from the cart.
+- `DELETE /api/cart/{user_id}/clear`: Clear all items from the user's cart.
+
+Note:- sometimes if `skaffold dev --port-forward` gives this kind of error
+```
+ deployment/products-depl is ready. [6/7 deployment(s) still pending]
+ - deployment/products-postgres-depl is ready. [5/7 deployment(s) still pending]
+ - deployment/auth-depl is ready. [4/7 deployment(s) still pending]
+ - deployment/client-depl is ready. [3/7 deployment(s) still pending]
+ - deployment/cart-redis-depl is ready. [2/7 deployment(s) still pending]
+ - deployment/cart-depl: container cart terminated with exit code 1
+    - pod/cart-depl-fcc68fc68-s2ftl: container cart terminated with exit code 1
+      > [cart-depl-fcc68fc68-s2ftl cart] 2025/05/14 10:52:03 Failed to connect to Redis: dial tcp 10.102.137.174:6379: connect: connection refused
+ - deployment/cart-depl failed. Error: container cart terminated with exit code 1.
+```
+then run `skaffold delete` and then `skaffold dev --port-forward` again or
+first run `kubectl apply -f infra/k8s/cart-redis-depl.yaml` and then `skaffold dev --port-forward` again, to ensure the redis pod is up and running before the cart service pod starts.
