@@ -164,3 +164,4 @@ Note:- sometimes if `skaffold dev --port-forward` gives this kind of error
 ```
 then run `skaffold delete` and then `skaffold dev --port-forward` again or
 first run `kubectl apply -f infra/k8s/cart-redis-depl.yaml` and then `skaffold dev --port-forward` again, to ensure the redis pod is up and running before the cart service pod starts.
+
