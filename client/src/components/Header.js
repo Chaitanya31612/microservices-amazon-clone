@@ -11,13 +11,12 @@ import {
 import { useRouter } from "next/router";
 import headerStyles from "../styles/Header.module.css";
 import { useUser } from "@/context/UserContext";
-// import { useSelector } from "react-redux";
-// import { selectItems } from "../slices/basketSlice";
+import { useSelector } from "react-redux";
+import { selectItems } from "@/slices/cartSlice";
 
 const Header = () => {
-  // const [session] = useSession();
-  // const router = useRouter();
-  // const items = useSelector(selectItems);
+  const router = useRouter();
+  const items = useSelector(selectItems);
   const { currentUser } = useUser();
 
   return (
@@ -79,8 +78,6 @@ const Header = () => {
         <div
           className={`text-white flex items-center text-xs space-x-6 mx-5 whitespace-nowrap`}
         >
-          {/* <div onClick={!session ? signIn : signOut} className={`link`}>
-            <p>Hello, {session ? `${session.user.name}` : "Sign In"}</p> */}
           <div className={`link`}>
             {currentUser ? (
               <>
@@ -115,7 +112,7 @@ const Header = () => {
             className="relative flex items-center link"
           >
             <span className="absolute top-0 right-0 md:right-6 h-4 w-4 bg-yellow-400 text-center rounded-full text-black font-bold">
-              0{/* {items ? items.length : 0} */}
+              {items ? items.length : 0}
             </span>
 
             <ShoppingCartIcon className="h-10" />

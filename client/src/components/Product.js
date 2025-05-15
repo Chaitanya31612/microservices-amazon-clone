@@ -1,5 +1,10 @@
 import Image from "next/image";
 import { StarIcon } from "@heroicons/react/solid";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useState } from "react";
+import { addToCart } from "@/slices/cartSlice";
 
 const MAX_RATING = 5;
 const MIN_RATING = 1;
@@ -7,39 +12,39 @@ const MIN_RATING = 1;
 const Product = ({
   product: { id, title, price, description, category, image, quantity },
 }) => {
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-  // // randamised rating
-  // const [rating] = useState(
-  //   Math.floor(Math.random() * (MAX_RATING - MIN_RATING + 1)) + MIN_RATING
-  // );
+  // randamised rating
+  const [rating] = useState(
+    Math.floor(Math.random() * (MAX_RATING - MIN_RATING + 1)) + MIN_RATING
+  );
 
-  // const onClickNotify = () => {
-  //   toast(`${title} added to Cart!`, {
-  //     position: "bottom-right",
-  //     autoClose: 1500,
-  //     hideProgressBar: false,
-  //     closeOnClick: true,
-  //     pauseOnHover: true,
-  //     draggable: true,
-  //     progress: undefined,
-  //   });
-  // };
+  const onClickNotify = () => {
+    toast.success(`${title} added to Cart!`, {
+      position: "bottom-right",
+      autoClose: 1500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
 
-  // const addItemToBasket = () => {
-  //   const product = {
-  //     id,
-  //     title,
-  //     price,
-  //     description,
-  //     category,
-  //     image,
-  //     quantity,
-  //   };
+  const addItemToCart = () => {
+    const product = {
+      id,
+      title,
+      price,
+      description,
+      category,
+      image,
+      quantity,
+    };
 
-  //   dispatch(addToBasket(product));
-  //   onClickNotify();
-  // };
+    dispatch(addToCart(product));
+    onClickNotify();
+  };
 
   return (
     <div
@@ -62,13 +67,13 @@ const Product = ({
       <div className={"flex flex-col"}>
         <h4 className={"my-3"}>{title}</h4>
 
-        {/* <div className="flex">
-        {Array(rating)
-          .fill()
-          .map((_, index) => (
-            <StarIcon key={index} className={"h-5 text-yellow-500"} />
-          ))}
-      </div> */}
+        <div className="flex">
+          {Array(rating)
+            .fill()
+            .map((_, index) => (
+              <StarIcon key={index} className={"h-5 text-yellow-500"} />
+            ))}
+        </div>
 
         <p className={"text-xs my-2 line-clamp-2"}>{description}</p>
 
@@ -79,8 +84,10 @@ const Product = ({
           }).format(price)}
         </div>
 
-        {/* <button onClick={() => addItemToBasket()} className={'mt-auto button'}>Add to Cart</button> */}
-        <button className={"mt-auto button cursor-pointer"}>Add to Cart</button>
+        <button onClick={() => addItemToCart()} className={"mt-auto button"}>
+          Add to Cart
+        </button>
+        {/* <button className={"mt-auto button cursor-pointer"}>Add to Cart</button> */}
       </div>
     </div>
   );

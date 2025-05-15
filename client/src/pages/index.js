@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import ProductFeed from "@/components/ProductFeed";
 import Head from "next/head";
 import axios from "axios";
+import { ToastContainer } from "react-toastify";
 
 export default function Home({ products }) {
   return (
@@ -12,7 +13,7 @@ export default function Home({ products }) {
         <title>Amazon Clone</title>
       </Head>
 
-      {/* <ToastContainer /> */}
+      <ToastContainer />
       <Header />
 
       <main className="max-w-screen-2xl mx-auto">
