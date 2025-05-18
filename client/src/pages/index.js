@@ -5,8 +5,20 @@ import ProductFeed from "@/components/ProductFeed";
 import Head from "next/head";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { fetchFromLocalStorage, selectItems } from "@/slices/cartSlice";
+import { useEffect } from "react";
+import { useUser } from "@/context/UserContext";
+import { fetchCart } from "@/slices/cartThunks";
 
 export default function Home({ products }) {
+  const dispatch = useDispatch();
+  const { currentUser } = useUser();
+
+  useEffect(() => {
+    dispatch(fetchCart(currentUser?.id));
+  }, [currentUser]);
+
   return (
     <div className="bg-gray-100">
       <Head>

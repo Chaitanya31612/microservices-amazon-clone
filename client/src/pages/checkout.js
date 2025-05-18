@@ -12,6 +12,7 @@ import Head from "next/head";
 import { useEffect } from "react";
 import axios from "axios";
 import { useUser } from "@/context/UserContext";
+import { fetchCart } from "@/slices/cartThunks";
 
 const checkout = () => {
   const items = useSelector(selectItems);
@@ -21,9 +22,11 @@ const checkout = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const items = JSON.parse(localStorage.getItem("items"));
-    if (items) dispatch(fetchFromLocalStorage(items));
-  }, []);
+    // const items = JSON.parse(localStorage.getItem("items"));
+    // if (items) dispatch(fetchFromLocalStorage(items));
+
+    dispatch(fetchCart(currentUser?.id));
+  }, [currentUser]);
 
   return (
     <div className="bg-gray-100">

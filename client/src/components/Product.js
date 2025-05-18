@@ -4,7 +4,8 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState } from "react";
-import { addToCart } from "@/slices/cartSlice";
+import { useUser } from "@/context/UserContext";
+import { addToCart } from "@/slices/cartThunks";
 
 const MAX_RATING = 5;
 const MIN_RATING = 1;
@@ -12,6 +13,7 @@ const MIN_RATING = 1;
 const Product = ({
   product: { id, title, price, description, category, image, quantity },
 }) => {
+  const { currentUser } = useUser();
   const dispatch = useDispatch();
 
   // randamised rating
@@ -42,7 +44,12 @@ const Product = ({
       quantity,
     };
 
-    dispatch(addToCart(product));
+    dispatch(
+      addToCart({
+        item: product,
+        userId: currentUser?.id,
+      })
+    );
     onClickNotify();
   };
 
@@ -67,13 +74,13 @@ const Product = ({
       <div className={"flex flex-col"}>
         <h4 className={"my-3"}>{title}</h4>
 
-        <div className="flex">
+        {/* <div className="flex">
           {Array(rating)
             .fill()
             .map((_, index) => (
               <StarIcon key={index} className={"h-5 text-yellow-500"} />
             ))}
-        </div>
+        </div> */}
 
         <p className={"text-xs my-2 line-clamp-2"}>{description}</p>
 

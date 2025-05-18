@@ -4,6 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import useRequest from "@/hooks/useRequest";
+import { useDispatch } from "react-redux";
+import { transferCartToServer } from "@/slices/cartThunks";
+import { useUser } from "@/context/UserContext";
+import ErrorAlert from "@/components/ErrorAlert";
 
 export default function Register() {
   const router = useRouter();
@@ -20,6 +24,8 @@ export default function Register() {
     passwordMatch: true,
   });
 
+  const dispatch = useDispatch();
+
   const { doRequest, errors } = useRequest({
     url: "/api/users/signup",
     method: "post",
@@ -29,7 +35,9 @@ export default function Register() {
       password: formData.password,
       role: formData.role,
     },
-    onSuccess: () => {
+    onSuccess: (user) => {
+      const userId = user.id;
+      dispatch(transferCartToServer(userId));
       window.location.href = "/"; // Redirect to root route
     },
   });
@@ -120,6 +128,8 @@ export default function Register() {
         </div>
 
         <div className="w-full max-w-md p-5 border border-gray-300 rounded">
+          {console.log(errors)}
+          {errors?.length > 0 && <ErrorAlert subMessage={errors[0]?.message} />}
           <h1 className="text-2xl font-normal mb-4">Create account</h1>
 
           <form onSubmit={handleSubmit}>

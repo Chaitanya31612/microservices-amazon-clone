@@ -78,20 +78,20 @@ const Header = () => {
         <div
           className={`text-white flex items-center text-xs space-x-6 mx-5 whitespace-nowrap`}
         >
-          <div className={`link`}>
+          <div className={" link "}>
             {currentUser ? (
               <>
                 <Link href="/auth/signout">
                   <p>Hello, {currentUser.username}</p>
+                  <p className={"font-bold md:text-sm"}>Logout</p>
                 </Link>
-                <p className={"font-bold md:text-sm"}>Signout</p>
               </>
             ) : (
               <>
                 <Link href="/auth/signin">
                   <p>Hello, Sign In</p>
+                  <p className={"font-bold md:text-sm"}>Account & Lists</p>
                 </Link>
-                <p className={"font-bold md:text-sm"}>Account & Lists</p>
               </>
             )}
             {/* </div> */}

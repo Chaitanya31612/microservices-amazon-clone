@@ -3,11 +3,10 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import {
-  addToCart,
   removeFromCart,
-  decrementQuantity,
-  incrementQuantity,
-} from "../slices/cartSlice";
+  updateItemQuantity,
+} from "../slices/cartThunks";
+import { useUser } from "@/context/UserContext";
 
 const MAX_RATING = 5;
 const MIN_RATING = 1;
@@ -21,6 +20,9 @@ const CheckoutProduct = ({
   image,
   quantity,
 }) => {
+  const { currentUser } = useUser();
+  const userId = currentUser?.id || null;
+
   // randamised rating
   const [rating] = useState(
     Math.floor(Math.random() * (MAX_RATING - MIN_RATING + 1)) + MIN_RATING
@@ -30,29 +32,29 @@ const CheckoutProduct = ({
   const dispatch = useDispatch();
 
   const removeItemFromCart = () => {
-    // setQuant(quantity)
-    dispatch(removeFromCart({ id }));
+    dispatch(removeFromCart({ productId: id, userId }));
   };
 
   useEffect(() => {
     setQuant(quantity);
-  }, [removeItemFromCart]);
+  }, [quantity]);
 
-  const decrementItemQuantity = () => {
-    if (quant - 1 == 0) {
-      dispatch(removeFromCart({ id }));
+  const updateQuantity = (newQuantity) => {
+    if (newQuantity === 0) {
+      dispatch(removeFromCart({ productId: id, userId }));
       return;
     }
 
-    setQuant(quant - 1);
+    setQuant(newQuantity);
+    dispatch(updateItemQuantity({ productId: id, quantity: newQuantity, userId }));
+  };
 
-    dispatch(decrementQuantity({ id }));
+  const decrementItemQuantity = () => {
+    updateQuantity(quant - 1);
   };
 
   const incrementItemQuantity = () => {
-    setQuant(quant + 1);
-
-    dispatch(incrementQuantity({ id }));
+    updateQuantity(quant + 1);
   };
 
   return (

@@ -6,6 +6,8 @@ import useRequest from "@/hooks/useRequest";
 import { useRouter } from "next/router";
 import ErrorAlert from "@/components/ErrorAlert";
 import { useUser } from "@/context/UserContext";
+import { useDispatch } from "react-redux";
+import { transferCartToServer } from "@/slices/cartThunks";
 
 export default function SignIn() {
   const router = useRouter();
@@ -15,10 +17,14 @@ export default function SignIn() {
     url: "/api/users/signin",
     method: "post",
     body: { email, password },
-    onSuccess: () => {
+    onSuccess: (user) => {
+      const userId = user.id;
+      dispatch(transferCartToServer(userId));
       window.location.href = "/"; // Redirect to root route
     },
   });
+
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +53,7 @@ export default function SignIn() {
 
         <div className="w-full max-w-sm p-4 border border-gray-300 rounded">
           {console.log(errors)}
-          {errors.length > 0 && <ErrorAlert subMessage={errors[0]?.message} />}
+          {errors?.length > 0 && <ErrorAlert subMessage={errors[0]?.message} />}
           <h1 className="text-2xl font-normal mb-4">Sign in</h1>
 
           <form onSubmit={handleSubmit}>

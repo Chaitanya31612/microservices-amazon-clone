@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -14,12 +16,14 @@ import (
 
 // CartItem represents an item in the shopping cart
 type CartItem struct {
-	ProductID  string  `json:"product_id"`
-	Quantity   int     `json:"quantity"`
-	UnitPrice  float64 `json:"unit_price"`
-	TotalPrice float64 `json:"total_price"`
-	Name       string  `json:"name"`
-	ImageURL   string  `json:"image_url"`
+	ID          string  `json:"id"`
+	Quantity    int     `json:"quantity"`
+	Price       float64 `json:"price"`
+	TotalPrice  float64 `json:"total_price"`
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	Category    string  `json:"category"`
+	Image       string  `json:"image"`
 }
 
 // Cart represents the shopping cart
@@ -58,9 +62,12 @@ func main() {
 	// Setup router
 	r := mux.NewRouter()
 	r.Use(loggingMiddleware)
+	r.Use(errorLoggingMiddleware)
+
 	r.HandleFunc("/api/cart/health", CheckHealthHandler).Methods("GET")
 	r.HandleFunc("/api/cart/{user_id}", GetCartHandler).Methods("GET")
 	r.HandleFunc("/api/cart/{user_id}/items", AddItemHandler).Methods("POST")
+	r.HandleFunc("/api/cart/{user_id}/items/bulk-add", AddBulkItemsHandler).Methods("POST")
 	r.HandleFunc("/api/cart/{user_id}/items/{product_id}", UpdateItemHandler).Methods("PUT")
 	r.HandleFunc("/api/cart/{user_id}/items/{product_id}", RemoveItemHandler).Methods("DELETE")
 	r.HandleFunc("/api/cart/{user_id}/clear", ClearCartHandler).Methods("DELETE")
@@ -104,11 +111,11 @@ func GetCartHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Save the new cart
 		if err := saveCart(cart); err != nil {
-			http.Error(w, "Failed to create cart", http.StatusInternalServerError)
+			respondWithError(w, http.StatusInternalServerError, "Failed to create cart", err)
 			return
 		}
 	} else if err != nil {
-		http.Error(w, "Failed to get cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to get cart", err)
 		return
 	}
 
@@ -122,37 +129,90 @@ func AddItemHandler(w http.ResponseWriter, r *http.Request) {
 
 	var item CartItem
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		log.Printf("Error decoding request body: %v \n", err)
+		log.Printf("item: %v \n", item)
+		respondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
 	// Calculate total price for this item
-	item.TotalPrice = item.UnitPrice * float64(item.Quantity)
+	item.TotalPrice = item.Price * float64(item.Quantity)
 
 	cart, err := getCart(userID)
 	if err == redis.Nil {
 		// Create a new cart if it doesn't exist
 		cart = newCart(userID)
 	} else if err != nil {
-		http.Error(w, "Failed to get cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to get cart", err)
 		return
 	}
 
 	// Update or add the item
-	if existingItem, exists := cart.Items[item.ProductID]; exists {
+	if existingItem, exists := cart.Items[item.ID]; exists {
 		// Update quantity
 		item.Quantity += existingItem.Quantity
-		item.TotalPrice = item.UnitPrice * float64(item.Quantity)
+		item.TotalPrice = item.Price * float64(item.Quantity)
 	}
 
-	cart.Items[item.ProductID] = item
+	cart.Items[item.ID] = item
 	cart.UpdatedAt = time.Now()
 
 	// Recalculate cart total
 	recalculateCartTotal(cart)
 
 	if err := saveCart(cart); err != nil {
-		http.Error(w, "Failed to update cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to update cart", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, cart)
+}
+
+// AddBulkItemsHandler adds multiple items to the cart in a single request
+func AddBulkItemsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["user_id"]
+
+	log.Printf("Adding bulk items to cart for user: %s", userID)
+
+	var items []CartItem
+	if err := json.NewDecoder(r.Body).Decode(&items); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	log.Printf("Items to add: %v", items)
+
+	cart, err := getCart(userID)
+	if err == redis.Nil {
+		// Create a new cart if it doesn't exist
+		cart = newCart(userID)
+	} else if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get cart", err)
+		return
+	}
+
+	// Add or update each item in the cart
+	for _, item := range items {
+		// Calculate total price for this item
+		item.TotalPrice = item.Price * float64(item.Quantity)
+
+		// Update or add the item
+		if _, exists := cart.Items[item.ID]; exists {
+			// just use item.Quantity
+			item.TotalPrice = item.Price * float64(item.Quantity)
+		}
+
+		cart.Items[item.ID] = item
+	}
+
+	cart.UpdatedAt = time.Now()
+
+	// Recalculate cart total
+	recalculateCartTotal(cart)
+
+	if err := saveCart(cart); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to update cart", err)
 		return
 	}
 
@@ -170,7 +230,7 @@ func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		respondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
@@ -179,7 +239,7 @@ func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cart not found", http.StatusNotFound)
 		return
 	} else if err != nil {
-		http.Error(w, "Failed to get cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to get cart", err)
 		return
 	}
 
@@ -195,7 +255,7 @@ func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Update quantity
 		item.Quantity = updateData.Quantity
-		item.TotalPrice = item.UnitPrice * float64(item.Quantity)
+		item.TotalPrice = item.Price * float64(item.Quantity)
 		cart.Items[productID] = item
 	}
 
@@ -205,7 +265,7 @@ func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 	recalculateCartTotal(cart)
 
 	if err := saveCart(cart); err != nil {
-		http.Error(w, "Failed to update cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to update cart", err)
 		return
 	}
 
@@ -223,7 +283,7 @@ func RemoveItemHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cart not found", http.StatusNotFound)
 		return
 	} else if err != nil {
-		http.Error(w, "Failed to get cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to get cart", err)
 		return
 	}
 
@@ -239,7 +299,7 @@ func RemoveItemHandler(w http.ResponseWriter, r *http.Request) {
 	recalculateCartTotal(cart)
 
 	if err := saveCart(cart); err != nil {
-		http.Error(w, "Failed to update cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to update cart", err)
 		return
 	}
 
@@ -256,7 +316,7 @@ func ClearCartHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cart not found", http.StatusNotFound)
 		return
 	} else if err != nil {
-		http.Error(w, "Failed to get cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to get cart", err)
 		return
 	}
 
@@ -265,7 +325,7 @@ func ClearCartHandler(w http.ResponseWriter, r *http.Request) {
 	cart.UpdatedAt = time.Now()
 
 	if err := saveCart(cart); err != nil {
-		http.Error(w, "Failed to clear cart", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to clear cart", err)
 		return
 	}
 
@@ -277,11 +337,13 @@ func getCart(userID string) (*Cart, error) {
 	key := getCartKey(userID)
 	val, err := rdb.Get(ctx, key).Result()
 	if err != nil {
+		log.Printf("Error fetching cart from Redis for user %s: %v", userID, err)
 		return nil, err
 	}
 
 	var cart Cart
 	if err := json.Unmarshal([]byte(val), &cart); err != nil {
+		log.Printf("Error unmarshaling cart data for user %s: %v", userID, err)
 		return nil, err
 	}
 
@@ -312,6 +374,11 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
+	log.Printf("%s: %v", msg, err)
+	http.Error(w, msg, code)
+}
+
 // Recalculate cart total
 func recalculateCartTotal(cart *Cart) {
 	cart.Total = 0
@@ -322,8 +389,45 @@ func recalculateCartTotal(cart *Cart) {
 
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Received %s request for %s", r.Method, r.URL.Path)
+		bodyBytes, _ := io.ReadAll(r.Body)
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		log.Printf("Incoming request: %s %s | Body: %s | Headers: %v",
+			r.Method, r.URL.Path, string(bodyBytes), r.Header)
+
 		next.ServeHTTP(w, r)
-		log.Printf("Responded to %s request for %s", r.Method, r.URL.Path)
 	})
 }
+
+func errorLoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				log.Printf("Panic recovered: %v", rec)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
+}
+
+// func loggingMiddleware(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		log.Printf("Received %s request for %s", r.Method, r.URL.Path)
+// 		log.Printf("Request body: %v and header: %v", r.Body, r.Header)
+// 		next.ServeHTTP(w, r)
+// 		log.Printf("Responded to %s request for %s", r.Method, r.URL.Path)
+// 	})
+// }
+
+// func errorLoggingMiddleWare(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		defer func() {
+// 			if err := recover(); err != nil {
+// 				log.Printf("Error: %v", err)
+// 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+// 			}
+// 		}()
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
