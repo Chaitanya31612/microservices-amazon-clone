@@ -11,7 +11,7 @@ import {
 } from "@cgecommerceproject/common";
 import { newOrderRouter } from "./routes/new";
 import { showOrderRouter } from "./routes/show";
-import { indexOrderRouter } from "./routes";
+import { indexOrderRouter } from "./routes/index";
 import { deleteOrderRouter } from "./routes/delete";
 
 const app = express();
@@ -24,7 +24,7 @@ app.use(
   })
 );
 
-app.use(morgan("tiny"));
+app.use(morgan("tiny")); // for logging
 app.use(currentUser); // for authentication and setting of req.currentUser
 
 app.use(indexOrderRouter);

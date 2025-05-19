@@ -32,6 +32,14 @@ build:
         manual:
           - src: "src/**/*.js"
             dest: .
+    - image: chaitanya31/orders
+      context: orders
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
     - image: chaitanya31/cart
       context: cart
       docker:

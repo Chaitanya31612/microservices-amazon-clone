@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node-dev src/index.ts",
-    "test": "jest --watchAll --no-cache"
+    "test": "jest --watchAll --no-cache",
+    "seed": "ts-node scripts/seed-products.ts"
   },
   "jest": {
     "preset": "ts-jest",
@@ -16,8 +17,10 @@
   "license": "ISC",
   "dependencies": {
     "@cgecommerceproject/common": "^1.0.13",
+    "@types/axios": "^0.14.4",
     "@types/cookie-session": "^2.0.44",
     "@types/jsonwebtoken": "^9.0.2",
+    "axios": "^1.9.0",
     "cookie-session": "^2.0.0",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
