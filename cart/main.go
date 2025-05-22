@@ -64,17 +64,118 @@ func main() {
 	r.Use(loggingMiddleware)
 	r.Use(errorLoggingMiddleware)
 
+	// Public routes
 	r.HandleFunc("/api/cart/health", CheckHealthHandler).Methods("GET")
-	r.HandleFunc("/api/cart/{user_id}", GetCartHandler).Methods("GET")
-	r.HandleFunc("/api/cart/{user_id}/items", AddItemHandler).Methods("POST")
-	r.HandleFunc("/api/cart/{user_id}/items/bulk-add", AddBulkItemsHandler).Methods("POST")
-	r.HandleFunc("/api/cart/{user_id}/items/{product_id}", UpdateItemHandler).Methods("PUT")
-	r.HandleFunc("/api/cart/{user_id}/items/{product_id}", RemoveItemHandler).Methods("DELETE")
-	r.HandleFunc("/api/cart/{user_id}/clear", ClearCartHandler).Methods("DELETE")
+
+	// Authenticated routes
+	cartRoutes := r.PathPrefix("/api/cart").Subrouter()
+	cartRoutes.Use(authMiddleware)
+	cartRoutes.HandleFunc("/{user_id}", GetCartHandler).Methods("GET")
+	cartRoutes.HandleFunc("/{user_id}/items", AddItemHandler).Methods("POST")
+	cartRoutes.HandleFunc("/{user_id}/items/bulk-add", AddBulkItemsHandler).Methods("POST")
+	cartRoutes.HandleFunc("/{user_id}/items/{product_id}", UpdateItemHandler).Methods("PUT")
+	cartRoutes.HandleFunc("/{user_id}/items/{product_id}", RemoveItemHandler).Methods("DELETE")
+	cartRoutes.HandleFunc("/{user_id}/clear", ClearCartHandler).Methods("DELETE")
 
 	// Start server
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
+}
+
+// authMiddleware verifies the session and adds user info to context
+func authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("[authMiddleware] Processing request for %s", r.URL.Path)
+
+		// Get session cookie
+		cookie, err := r.Cookie("session")
+		if err != nil || cookie == nil {
+			log.Printf("[authMiddleware] No session cookie found: %v", err)
+			respondWithError(w, http.StatusUnauthorized, "Not authorized", err)
+			return
+		}
+		log.Printf("[authMiddleware] Found session cookie: %s", cookie.String())
+
+		// Make request to auth service to validate session
+		authURL := "http://auth-srv:3000/api/users/currentuser"
+		log.Printf("[authMiddleware] Making request to auth service: %s", authURL)
+		authReq, err := http.NewRequest("GET", authURL, nil)
+		if err != nil {
+			log.Printf("[authMiddleware] Failed to create request: %v", err)
+			respondWithError(w, http.StatusInternalServerError, "Failed to create request", err)
+			return
+		}
+
+		// Copy all cookies from the original request
+		for _, c := range r.Cookies() {
+			authReq.AddCookie(c)
+			log.Printf("[authMiddleware] Added cookie to auth request: %s", c.String())
+		}
+
+		// Copy relevant headers that might be needed for auth
+		authReq.Header.Set("Cookie", r.Header.Get("Cookie"))
+		log.Printf("[authMiddleware] Cookie header: %s", r.Header.Get("Cookie"))
+
+		// Create HTTP client with timeout
+		client := &http.Client{
+			Timeout: 5 * time.Second,
+		}
+
+		// Execute request
+		resp, err := client.Do(authReq)
+		if err != nil {
+			log.Printf("[authMiddleware] Failed to validate session: %v", err)
+			respondWithError(w, http.StatusUnauthorized, "Failed to validate session", err)
+			return
+		}
+
+		// Read response body
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("[authMiddleware] Failed to read response: %v", err)
+			respondWithError(w, http.StatusInternalServerError, "Failed to read response", err)
+			return
+		}
+		resp.Body.Close()
+
+		log.Printf("[authMiddleware] Auth service response status: %d", resp.StatusCode)
+		log.Printf("[authMiddleware] Auth service response body: %s", string(body))
+		// example response
+		// Auth service response body: {"id":"682ee1cbd9d5aeac96b9a4c1","username":"test1","email":"test1@example.com","role":"seller","iat":1747902923}
+
+		// Check if response is successful
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("[authMiddleware] Auth service returned non-OK status: %d", resp.StatusCode)
+			respondWithError(w, http.StatusUnauthorized, "Not authorized", nil)
+			return
+		}
+
+		// Parse user info
+		var response struct {
+			ID       string `json:"id"`
+			Email    string `json:"email"`
+			Username string `json:"username"`
+		}
+
+		if err := json.Unmarshal(body, &response); err != nil {
+			log.Printf("[authMiddleware] Failed to parse user info: %v", err)
+			respondWithError(w, http.StatusInternalServerError, "Failed to parse user info", err)
+			return
+		}
+
+		// Check if user is authenticated
+		if response.ID == "" {
+			log.Printf("[authMiddleware] User not authenticated")
+			respondWithError(w, http.StatusUnauthorized, "Not authorized", nil)
+			return
+		}
+
+		log.Printf("[authMiddleware] User authenticated: %s", response.Email)
+
+		// Add user info to context
+		ctx := context.WithValue(r.Context(), "currentUser", response)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 // getCartKey returns the Redis key for a cart
