@@ -31,7 +31,7 @@ router.post(
     const { productId } = req.body;
 
     // Find the ticket the user is trying to order in the database
-    const product = await Product.findById(productId);
+    const product = await Product.findOne({id: productId})
     if (!product) {
       throw new NotFoundError();
     }

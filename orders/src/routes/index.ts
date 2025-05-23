@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { requireAuth } from "@cgecommerceproject/common";
 import { Order } from "../models/order";
+import { Product } from "../models/product";
 
 const router = express.Router();
 
@@ -9,7 +10,9 @@ router.get("/api/orders", requireAuth, async (req: Request, res: Response) => {
     userId: req.currentUser!.id,
   }).populate("products.product");
 
-  res.send(orders);
+  const products = await Product.find()
+
+  res.send({orders, products});
 });
 
 export { router as indexOrderRouter };

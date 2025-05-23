@@ -55,7 +55,6 @@ const productSchema = new mongoose.Schema(
   {
     toJSON: {
       transform(doc, ret) {
-        ret.id = ret._id;
         delete ret._id;
       },
     },
@@ -66,7 +65,7 @@ const productSchema = new mongoose.Schema(
 productSchema.set("versionKey", "version");
 
 productSchema.statics.build = (attrs: ProductAttrs) => {
-  return new Product(attrs);
+  return new Product(attrs)
 };
 
 const Product = mongoose.model<ProductDoc, ProductModel>("Product", productSchema);

@@ -42,7 +42,7 @@ var rdb *redis.Client
 
 const (
 	cartPrefix = "cart:"
-	cartExpiry = 24 * time.Hour
+	cartExpiry = 48 * time.Hour // 2 days
 )
 
 func main() {

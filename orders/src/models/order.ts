@@ -1,10 +1,7 @@
 import mongoose from "mongoose";
 import { OrderStatus } from "@cgecommerceproject/common";
-// import { TicketDoc } from "./ticket";
 
 export { OrderStatus };
-
-import { Product } from "./product";
 
 import { ProductDoc } from "./product";
 
