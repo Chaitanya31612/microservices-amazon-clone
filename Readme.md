@@ -1,26 +1,36 @@
 ## Steps to run the project
 
 1. Have skaffold installed and run `skaffold dev` in the root directory of the project
-2. for running in ubuntu install minikube and run `minikube start` and then `skaffold dev`
+2. For running in Ubuntu install minikube and run `minikube start` and then `skaffold dev`
 3. Use `skaffold dev --port-forward` to forward the ports to the host machine
 
 OR
-4. run `minukube service -all` to get the url of the service and open it in the browser
-5. run `minikube dashboard` to see the dashboard of the cluster
-6. run `minikube stop` to stop the cluster
-7. run `minikube delete` to delete the cluster
-8. run `minikube addons list` to see the addons installed
+4. Run `minikube service -all` to get the URL of the service and open it in the browser
+5. Run `minikube dashboard` to see the dashboard of the cluster
+6. Run `minikube stop` to stop the cluster
+7. Run `minikube delete` to delete the cluster
+8. Run `minikube addons list` to see the addons installed
 
-9. type `thisisunsafe` in the browser if you see not secure warning
+9. Type `thisisunsafe` in the browser if you see not secure warning
 
-## Creating secret in kube cluster
+## Creating secrets in Kubernetes cluster
 
-1. Create a secret in the cluster using the command `kubectl create secret generic jwt-secret --from-literal=JWT_KEY=your_secret_key`
-2. Secret for products service
+1. Create a JWT secret in the cluster:
 ```
-❯ kubectl create secret generic products-secrets \
+kubectl create secret generic jwt-secret --from-literal=JWT_KEY=your_secret_key
+```
+
+2. Secret for products service:
+```
+kubectl create secret generic products-secrets \
   --from-literal=POSTGRES_USERNAME=username \
   --from-literal=POSTGRES_PASSWORD=password
+```
+
+3. Secret for Stripe integration (required for payments service):
+```
+kubectl create secret generic stripe-secret \
+  --from-literal=STRIPE_KEY=your_stripe_secret_key
 ```
 
 ## Docker, Kubernetes, and Skaffold Documentation
@@ -164,4 +174,149 @@ Note:- sometimes if `skaffold dev --port-forward` gives this kind of error
 ```
 then run `skaffold delete` and then `skaffold dev --port-forward` again or
 first run `kubectl apply -f infra/k8s/cart-redis-depl.yaml` and then `skaffold dev --port-forward` again, to ensure the redis pod is up and running before the cart service pod starts.
+
+## Orders and Payments Services Documentation
+
+### Overview
+The Orders and Payments services are separate microservices that handle order management and payment processing within the application. Both services are built using Node.js, Express, and TypeScript, with MongoDB for data persistence, but they serve different purposes in the overall architecture. The Payments service specifically integrates with Stripe for payment processing.
+
+### Key Features
+
+#### Orders Service
+- Order creation and management with product details
+- Order status tracking (Created, Cancelled, Awaiting Payment, Complete)
+- Order expiration handling
+- Stores complete product information within orders
+- Integration with other services through event-based communication
+
+#### Payments Service
+- Secure payment processing using Stripe
+- Order verification before payment
+- Payment record management
+- User authorization checks for payment operations
+- Maintains its own copy of order data for payment processing
+
+### Microservices Architecture
+
+#### Data Models
+
+1. **Order Model in Orders Service**:
+   - Properties: userId, status, expiresAt, products (array with product details and quantity)
+   - Each order contains complete product information
+   - Uses versioning for optimistic concurrency control
+   - Status follows the OrderStatus enum from the common library
+
+2. **Order Model in Payments Service**:
+   - Properties: userId, status, price, version
+   - Simplified version of the order data needed for payment processing
+   - Uses mongoose-update-if-current for optimistic concurrency control
+   - Maintained separately from the Orders service's model
+
+3. **Payment Model in Payments Service**:
+   - Properties: orderId, stripeId
+   - Links payments to their corresponding orders
+
+#### API Endpoints
+
+1. **Orders Service**:
+   - `POST /api/orders`: Create a new order with product details and quantity
+   - `GET /api/orders`: Retrieve all orders for the current user
+   - `GET /api/orders/:id`: Retrieve a specific order with full product information
+   - `DELETE /api/orders/:id`: Cancel an order
+
+2. **Payments Service**:
+   - `POST /api/payments`: Process a payment for an order using Stripe
+   - `POST /api/payments/create-order`: Create a simplified order record in the Payments service (temporary endpoint until async communication is fully implemented)
+
+### Setup and Installation
+
+1. **Dependencies**: 
+   
+   **Orders Service**:
+   - `express` for API routing
+   - `mongoose` for MongoDB interactions
+   - `express-validator` for input validation
+   - `@cgecommerceproject/common` for shared functionality like OrderStatus enum
+   
+   **Payments Service**:
+   - `express` for API routing
+   - `mongoose` for MongoDB interactions
+   - `stripe` for payment processing
+   - `mongoose-update-if-current` for concurrency control
+   - `express-validator` for input validation
+   - `@cgecommerceproject/common` for shared functionality
+
+2. **Environment Setup**:
+   - Each service has its own MongoDB database
+   - Orders service requires its own MongoDB deployment
+   - Payments service requires its own MongoDB deployment
+   - Payments service requires the Stripe secret key configured in Kubernetes secrets
+
+### Stripe Integration
+
+1. **Configuration**:
+   - The Payments service uses the Stripe Node.js SDK
+   - Requires a valid Stripe API key stored in Kubernetes secrets
+   - Uses Stripe API version "2025-04-30.basil"
+
+2. **Payment Flow**:
+   - Client sends payment token and orderId to the Payments service
+   - Service verifies order existence and user authorization
+   - Service creates a Stripe charge with order details
+   - Service records the payment in the database
+   - Service returns payment and order details to the client
+
+### Security Considerations
+
+1. **API Security**:
+   - All endpoints are protected with JWT authentication
+   - Order ownership is verified before allowing payment operations
+   - Input validation using express-validator
+
+2. **Stripe Security**:
+   - Stripe API key is stored securely in Kubernetes secrets
+   - Payment information is handled directly by Stripe
+   - Metadata is added to payments for audit purposes
+
+### Common Gotchas and Troubleshooting
+
+1. **Stripe API Key**:
+   - Ensure the `stripe-secret` is correctly configured in Kubernetes before deploying the Payments service
+   - If payments fail with authentication errors, verify the Stripe API key is valid
+   - The Stripe API key is only needed for the Payments service, not the Orders service
+
+2. **Microservices Data Consistency**:
+   - The Orders and Payments services maintain separate Order models
+   - The Payments service has a simplified Order model with just the data needed for payment processing
+   - When an order is created in the Orders service, a corresponding record must be created in the Payments service
+   - Currently using a temporary `/api/payments/create-order` endpoint until event-based communication is implemented
+
+3. **Order Status Management**:
+   - Orders must be in the correct status before payment processing
+   - The OrderStatus enum is shared via the common library to ensure consistency between services
+   - Implement proper error handling for order status transitions across services
+
+4. **Concurrency Issues**:
+   - Both services use versioning to handle concurrent updates
+   - Always check the version number when updating orders across services
+   - The `mongoose-update-if-current` plugin helps manage document versions
+
+5. **Service Independence**:
+   - Each service operates independently with its own database
+   - The Payments service can process payments even if the Orders service is temporarily down
+   - However, new orders cannot be paid for if the Orders service is down for extended periods
+
+6. **Deployment Order**:
+   - Each service has its own MongoDB deployment that should be applied first:
+     ```
+     kubectl apply -f infra/k8s/orders-mongo-depl.yaml
+     kubectl apply -f infra/k8s/payments-mongo-depl.yaml
+     ```
+   - Then restart the deployment with `skaffold dev --port-forward`
+
+7. **Testing Payments**:
+   - Use Stripe test tokens for development and testing
+   - Test token: `tok_visa` can be used for successful payment simulation
+   - Test token: `tok_chargeDeclined` can be used to simulate declined payments
+   - Remember that the Payments service needs a valid order record before processing payment
 
