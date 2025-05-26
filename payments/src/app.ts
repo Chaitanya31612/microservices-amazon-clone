@@ -10,6 +10,8 @@ import {
   errorHandler,
 } from "@cgecommerceproject/common";
 import { healthCheckRouter } from "./routes/health";
+import { paymentCheckRouter } from "./routes/new";
+import { createOrderRouter } from "./routes/create-order";
 
 const app = express();
 app.set("trust proxy", true); // trust traffic from ingress-nginx proxy
@@ -25,6 +27,8 @@ app.use(morgan("tiny")); // for logging
 app.use(currentUser); // for authentication and setting of req.currentUser
 
 app.use(healthCheckRouter);
+app.use(paymentCheckRouter)
+app.use(createOrderRouter)
 
 app.all("*", () => {
   throw new NotFoundError();

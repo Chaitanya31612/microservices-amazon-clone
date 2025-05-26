@@ -9,7 +9,6 @@ interface OrderAttrs {
   userId: string;
   status: OrderStatus;
   price: number;
-  version: number;
 }
 
 export interface OrderDoc extends mongoose.Document {
