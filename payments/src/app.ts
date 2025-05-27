@@ -24,9 +24,13 @@ app.use(
 );
 
 app.use(morgan("tiny")); // for logging
+
+// Health check endpoint doesn't need authentication
+app.use(healthCheckRouter);
+
+// Apply authentication middleware for protected routes
 app.use(currentUser); // for authentication and setting of req.currentUser
 
-app.use(healthCheckRouter);
 app.use(paymentCheckRouter)
 app.use(createOrderRouter)
 

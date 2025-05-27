@@ -11,6 +11,8 @@
   "dependencies": {
     "@heroicons/react": "^1.0.6",
     "@reduxjs/toolkit": "^2.8.2",
+    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/stripe-js": "^7.3.0",
     "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.8.1",
     "currency-formatter": "^1.5.9",
@@ -20,6 +22,7 @@
     "react-dom": "^19.0.0",
     "react-redux": "^9.2.0",
     "react-responsive-carousel": "^3.2.23",
+    "react-stripe-checkout": "^2.6.3",
     "react-toastify": "^11.0.5"
   },
   "devDependencies": {

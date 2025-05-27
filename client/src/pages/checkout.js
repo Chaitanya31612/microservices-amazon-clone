@@ -28,6 +28,37 @@ const checkout = () => {
     dispatch(fetchCart(currentUser?.id));
   }, [currentUser]);
 
+  const confirmOrder = async () => {
+    try {
+      // Create order items array from cart items
+      const orderItems = items.map(item => ({
+        productId: item.id,
+        quantity: item.quantity
+      }));
+
+      // Create order in orders service
+      const response = await axios.post('/api/orders', {
+        items: orderItems
+      });
+
+      const order = response.data;
+      
+      // Create same order in payments service
+      await axios.post('/api/payments/create-order', {
+        id: order.id,
+        userId: order.userId,
+        status: order.status,
+        price: total
+      });
+
+      // Redirect to order confirmation page
+      window.location.href = `/confirm-order/${order.id}`;
+    } catch (error) {
+      console.log(error);
+      alert('Error creating order. Please try again.');
+    }
+  }
+
   return (
     <div className="bg-gray-100">
       <Head>
@@ -111,7 +142,7 @@ const checkout = () => {
 
               <button
                 role="link"
-                // onClick={createCheckoutSession}
+                onClick={confirmOrder}
                 disabled={!currentUser}
                 className={`button mt-2 ${
                   !currentUser && "not-allowed-button"

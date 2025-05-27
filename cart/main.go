@@ -66,6 +66,7 @@ func main() {
 
 	// Public routes
 	r.HandleFunc("/api/cart/health", CheckHealthHandler).Methods("GET")
+	r.HandleFunc("/api/cart/healthz", CheckHealthHandler).Methods("GET") // Adding healthz endpoint to match Kubernetes configuration
 
 	// Authenticated routes
 	cartRoutes := r.PathPrefix("/api/cart").Subrouter()

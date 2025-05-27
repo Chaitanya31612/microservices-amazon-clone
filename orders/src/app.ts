@@ -13,6 +13,7 @@ import { newOrderRouter } from "./routes/new";
 import { showOrderRouter } from "./routes/show";
 import { indexOrderRouter } from "./routes/index";
 import { deleteOrderRouter } from "./routes/delete";
+import { healthzRouter } from "./routes/healthz";
 
 const app = express();
 app.set("trust proxy", true); // trust traffic from ingress-nginx proxy
@@ -25,6 +26,11 @@ app.use(
 );
 
 app.use(morgan("tiny")); // for logging
+
+// Health check endpoint doesn't need authentication
+app.use(healthzRouter);
+
+// Apply authentication middleware for protected routes
 app.use(currentUser); // for authentication and setting of req.currentUser
 
 app.use(indexOrderRouter);

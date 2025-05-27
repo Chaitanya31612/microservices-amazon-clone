@@ -3,9 +3,12 @@ package com.cgecommerce.products.controller;
 import com.cgecommerce.products.model.Product;
 import com.cgecommerce.products.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -42,5 +45,12 @@ public class ProductController {
     public void seedProducts() {
         System.out.println("Seeding products...");
         productService.seedProducts();
+    }
+    
+    @GetMapping("/healthz")
+    public ResponseEntity<Map<String, String>> healthCheck() {
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "ok");
+        return ResponseEntity.ok(response);
     }
 }

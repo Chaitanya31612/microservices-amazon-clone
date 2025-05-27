@@ -13,28 +13,45 @@ import { Order } from "../models/order";
 
 const router = express.Router();
 const EXPIRATION_WINDOW_SECONDS = 1 * 60;
+
 router.post(
   "/api/orders",
   requireAuth,
   [
-    body("productId")
-      .not()
-      .isEmpty()
-      .withMessage("Product Id must be provided"),
-    body("quantity")
-      .not()
-      .isEmpty()
-      .withMessage("Quantity must be provided"),
+    body("items")
+      .isArray()
+      .withMessage("Items must be provided as an array"),
   ],
   validateRequest,
   async (req: Request, res: Response) => {
-    const { productId } = req.body;
+    const { items } = req.body;
 
-    // Find the ticket the user is trying to order in the database
-    const product = await Product.findOne({id: productId})
-    if (!product) {
-      throw new NotFoundError();
+    // Check if items array is empty
+    if (items.length === 0) {
+      throw new BadRequestError('Order must contain at least one item');
     }
+
+    // Check if user has any existing unexpired orders
+    // const existingOrder = await Order.findOne({
+    //   userId: req.currentUser!.id,
+    //   status: { $in: [OrderStatus.Created, OrderStatus.AwaitingPayment] },
+    //   expiresAt: { $gt: new Date() }
+    // });
+
+    // if (existingOrder) {
+    //   throw new BadRequestError(`You already have an active order. Please complete or cancel it before creating a new one. Order ID: ${existingOrder.id}`);
+    // }
+
+    // Find all products the user is trying to order
+    const products = await Promise.all(
+      items.map(async (item: { productId: number, quantity: number }) => {
+        const product = await Product.findOne({ id: item.productId });
+        if (!product) {
+          throw new NotFoundError();
+        }
+        return { product, quantity: item.quantity };
+      })
+    );
 
     // Calculate an expiration date for this order
     const expiration = new Date();
@@ -45,10 +62,7 @@ router.post(
       userId: req.currentUser!.id,
       status: OrderStatus.Created,
       expiresAt: expiration,
-      products: [{
-        product,
-        quantity: req.body.quantity,
-      }],
+      products: products,
     });
     await order.save();
 

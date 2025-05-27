@@ -9,6 +9,7 @@ import { currentUserRouter } from "./routes/currentUser";
 import { signinRouter } from "./routes/signin";
 import { signoutRouter } from "./routes/signout";
 import { signupRouter } from "./routes/signup";
+import { healthzRouter } from "./routes/healthz";
 
 const app = express();
 app.set("trust proxy", true); // trust traffic from ingress-nginx proxy
@@ -22,6 +23,7 @@ app.use(
 
 app.use(morgan("tiny"));
 
+app.use(healthzRouter);
 app.use(currentUserRouter);
 app.use(signinRouter);
 app.use(signoutRouter);

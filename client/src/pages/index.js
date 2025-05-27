@@ -50,12 +50,18 @@ export async function getServerSideProps({ req }) {
 
   // this request is essentially a proxy request between the browser and the auth service pod through the ingress-nginx
   // passing the headers from the browser to the ingress-nginx, then to the auth service pod for the auth cookie
-  const { data: products } = await axios.get(
-    "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/products",
-    {
-      headers: req.headers,
-    }
-  );
+  let products = [];
+  try {
+    const { data } = await axios.get(
+      "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/products",
+      {
+        headers: req.headers,
+      }
+    );
+    products = data;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  }
 
   return {
     props: {
