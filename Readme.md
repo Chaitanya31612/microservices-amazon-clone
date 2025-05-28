@@ -16,6 +16,12 @@ This project is a full-featured e-commerce application with the following servic
 
 [Demo Video](assets/demo-video.mp4)
 
+
+
+
+https://github.com/user-attachments/assets/03087ff4-92f4-4074-a875-144cff00b150
+
+
 ## Steps to Run the Project
 
 ### Prerequisites
