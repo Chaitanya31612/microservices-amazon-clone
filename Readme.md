@@ -5,11 +5,11 @@ A comprehensive e-commerce platform built with microservices architecture using 
 ## Project Overview
 
 This project is a full-featured e-commerce application with the following services:
-- **Auth Service**: User authentication and authorization (Node.js/Express)
-- **Products Service**: Product catalog management (Spring Boot/Java)
-- **Cart Service**: Shopping cart functionality (Go)
-- **Orders Service**: Order management (Node.js/Express)
-- **Payments Service**: Payment processing with Stripe integration (Node.js/Express)
+- **Auth Service**: User authentication and authorization (Node.js/Express/Mongodb)
+- **Products Service**: Product catalog management (Spring Boot/Java/Postgresql)
+- **Cart Service**: Shopping cart functionality (Go/Redis)
+- **Orders Service**: Order management (Node.js/Express/Mongodb)
+- **Payments Service**: Payment processing with Stripe integration (Node.js/Express/Mongodb)
 - **Client**: Frontend application (Next.js/React)
 
 ## Demo Video
