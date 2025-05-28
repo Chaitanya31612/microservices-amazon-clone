@@ -408,8 +408,4 @@ The application implements a complete checkout flow with Stripe integration:
    - This is calculated and displayed on the order confirmation page
    - The total amount charged includes the shipping cost when applicable
 
-9. **Order Expiration**:
-    - Orders have an expiration time (typically 15 minutes)
-    - Users must complete payment before the order expires
-    - Expired orders are automatically cancelled
 
