@@ -1,37 +1,72 @@
-## Steps to run the project
+# Microservices E-Commerce Platform
 
-1. Have skaffold installed and run `skaffold dev` in the root directory of the project
-2. For running in Ubuntu install minikube and run `minikube start` and then `skaffold dev`
-3. Use `skaffold dev --port-forward` to forward the ports to the host machine
+A comprehensive e-commerce platform built with microservices architecture using Kubernetes, Docker, and multiple programming languages.
 
-OR
-4. Run `minikube service -all` to get the URL of the service and open it in the browser
-5. Run `minikube dashboard` to see the dashboard of the cluster
-6. Run `minikube stop` to stop the cluster
-7. Run `minikube delete` to delete the cluster
-8. Run `minikube addons list` to see the addons installed
+## Project Overview
 
-9. Type `thisisunsafe` in the browser if you see not secure warning
+This project is a full-featured e-commerce application with the following services:
+- **Auth Service**: User authentication and authorization (Node.js/Express)
+- **Products Service**: Product catalog management (Spring Boot/Java)
+- **Cart Service**: Shopping cart functionality (Go)
+- **Orders Service**: Order management (Node.js/Express)
+- **Payments Service**: Payment processing with Stripe integration (Node.js/Express)
+- **Client**: Frontend application (Next.js/React)
 
-## Creating secrets in Kubernetes cluster
+## Steps to Run the Project
 
-1. Create a JWT secret in the cluster:
-```
-kubectl create secret generic jwt-secret --from-literal=JWT_KEY=your_secret_key
-```
+### Prerequisites
+- Docker and Kubernetes installed
+- Skaffold installed
+- Minikube installed (for local development)
+- Stripe account (for payment processing)
 
-2. Secret for products service:
-```
-kubectl create secret generic products-secrets \
-  --from-literal=POSTGRES_USERNAME=username \
-  --from-literal=POSTGRES_PASSWORD=password
-```
+### Setup Instructions
 
-3. Secret for Stripe integration (required for payments service):
-```
-kubectl create secret generic stripe-secret \
-  --from-literal=STRIPE_KEY=your_stripe_secret_key
-```
+1. Start Minikube:
+   ```
+   minikube start
+   ```
+
+2. Create required Kubernetes secrets:
+   ```
+   # JWT authentication secret
+   kubectl create secret generic jwt-secret --from-literal=JWT_KEY=your_secret_key
+
+   # Products service database credentials
+   kubectl create secret generic products-secrets \
+     --from-literal=POSTGRES_USERNAME=username \
+     --from-literal=POSTGRES_PASSWORD=password
+
+   # Stripe API key for payments service
+   kubectl create secret generic stripe-secret \
+     --from-literal=STRIPE_KEY=your_stripe_secret_key
+   ```
+
+3. Start the application with Skaffold:
+   ```
+   skaffold dev --port-forward
+   ```
+
+### Alternative Commands
+
+- View all services: `minikube service -all`
+- Access Kubernetes dashboard: `minikube dashboard`
+- Stop Minikube: `minikube stop`
+- Delete Minikube cluster: `minikube delete`
+- List Minikube addons: `minikube addons list`
+
+### Troubleshooting
+
+- If you see a browser security warning, type `thisisunsafe` in Chrome to bypass it
+- If Redis connection issues occur with the Cart service:
+  ```
+  # First apply the Redis deployment
+  kubectl apply -f infra/k8s/cart-redis-depl.yaml
+
+  # Then restart Skaffold
+  skaffold delete
+  skaffold dev --port-forward
+  ```
 
 ## Docker, Kubernetes, and Skaffold Documentation
 
@@ -196,6 +231,33 @@ The Orders and Payments services are separate microservices that handle order ma
 - User authorization checks for payment operations
 - Maintains its own copy of order data for payment processing
 
+### Checkout Flow
+
+The application implements a complete checkout flow with Stripe integration:
+
+1. **Checkout Process**:
+   - User adds products to cart
+   - User clicks "Proceed to Checkout" on the cart page
+   - System creates an order in both the orders and payments services
+   - User is redirected to the order confirmation page
+
+2. **Order Confirmation**:
+   - Displays complete order details and summary
+   - Shows shipping costs (40 Rs for orders below 499 Rs)
+   - Integrates Stripe payment form for secure payment processing
+   - Processes payment and updates order status
+
+3. **Payment Processing**:
+   - Securely processes payment through Stripe
+   - Updates order status upon successful payment
+   - Redirects user to orders page after successful payment
+
+4. **Key Frontend Pages**:
+   - `checkout.js`: Handles order creation
+   - `confirm-order/[orderId].js`: Displays order details and Stripe payment form
+   - `orders.js`: Shows user's order history
+   - `success.js`: Confirmation page after successful payment
+
 ### Microservices Architecture
 
 #### Data Models
@@ -230,14 +292,14 @@ The Orders and Payments services are separate microservices that handle order ma
 
 ### Setup and Installation
 
-1. **Dependencies**: 
-   
+1. **Dependencies**:
+
    **Orders Service**:
    - `express` for API routing
    - `mongoose` for MongoDB interactions
    - `express-validator` for input validation
    - `@cgecommerceproject/common` for shared functionality like OrderStatus enum
-   
+
    **Payments Service**:
    - `express` for API routing
    - `mongoose` for MongoDB interactions
@@ -258,13 +320,22 @@ The Orders and Payments services are separate microservices that handle order ma
    - The Payments service uses the Stripe Node.js SDK
    - Requires a valid Stripe API key stored in Kubernetes secrets
    - Uses Stripe API version "2025-04-30.basil"
+   - Frontend uses `react-stripe-checkout` package for the checkout form
 
 2. **Payment Flow**:
+   - User enters payment details in the Stripe Elements form on the confirmation page
    - Client sends payment token and orderId to the Payments service
    - Service verifies order existence and user authorization
    - Service creates a Stripe charge with order details
    - Service records the payment in the database
    - Service returns payment and order details to the client
+   - User is redirected to the orders page
+
+3. **API Endpoints**:
+   - `/api/orders` (POST): Create new order
+   - `/api/payments/create-order` (POST): Create order in payments service
+   - `/api/orders/:orderId` (GET): Get order details
+   - `/api/payments` (POST): Process payment with Stripe
 
 ### Security Considerations
 
@@ -319,4 +390,14 @@ The Orders and Payments services are separate microservices that handle order ma
    - Test token: `tok_visa` can be used for successful payment simulation
    - Test token: `tok_chargeDeclined` can be used to simulate declined payments
    - Remember that the Payments service needs a valid order record before processing payment
+
+8. **Shipping Costs**:
+   - Shipping costs of 40 Rs are applied to orders below 499 Rs
+   - This is calculated and displayed on the order confirmation page
+   - The total amount charged includes the shipping cost when applicable
+
+9. **Order Expiration**:
+    - Orders have an expiration time (typically 15 minutes)
+    - Users must complete payment before the order expires
+    - Expired orders are automatically cancelled
 
