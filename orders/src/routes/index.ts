@@ -15,7 +15,7 @@ router.get("/api/orders", requireAuth, async (req: Request, res: Response) => {
   res.send({orders, products});
 });
 
-router.get("/api/user-orders", requireAuth, async (req: Request, res: Response) => {
+router.get("/api/orders/user-orders", requireAuth, async (req: Request, res: Response) => {
   const orders = await Order.find({
     userId: req.currentUser!.id,
   }).populate("products.product");

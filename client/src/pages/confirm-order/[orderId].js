@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useSelector } from "react-redux";
 import axios from "axios";
 import StripeCheckout from "react-stripe-checkout";
 import Header from "../../components/Header";
@@ -8,7 +7,8 @@ import Footer from "../../components/Footer";
 import Head from "next/head";
 import Image from "next/image";
 import { useUser } from "@/context/UserContext";
-
+import { useDispatch } from "react-redux";
+import { clearCart } from "@/slices/cartThunks";
 // Stripe publishable key - Replace with your actual key in production
 const STRIPE_KEY = "pk_test_51JADctSH9F4D0tUvEdlLn8cR0BcexzCBNOcA2emApeGxejaa5OPIfeXB1FvMKbomDaHsyP5N6Agnc9ZIMTp0oWkn000QjmwqVH";
 
@@ -19,6 +19,7 @@ const PaymentForm = ({ orderId, total }) => {
   const [error, setError] = useState(null);
   const { currentUser } = useUser();
   const router = useRouter();
+  const dispatch = useDispatch();
 
   // Handle successful token generation
   const handleToken = async (token) => {
@@ -32,6 +33,13 @@ const PaymentForm = ({ orderId, total }) => {
         orderId
       });
       console.log('response is', response);
+
+      await axios.put(`/api/orders/${orderId}`, {
+        status: "complete"
+      })
+
+      // dispatch clear cart
+      dispatch(clearCart(currentUser?.id));
 
       // Payment successful
       setSucceeded(true);

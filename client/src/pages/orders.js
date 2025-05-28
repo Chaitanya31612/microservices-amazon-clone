@@ -39,11 +39,11 @@ export async function getServerSideProps({ req }) {
 
   try {
     const { data } = await axios.get(
-      `${process.env.INGRESS_URL}/api/orders`,
+      `${process.env.INGRESS_URL}/api/orders/user-orders`,
       { headers: req.headers }
     );
 
-    orders = data.orders;
+    orders = data;
     console.log('orders is ', orders)
   } catch (error) {
     console.log(error);

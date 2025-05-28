@@ -98,9 +98,9 @@ const Header = () => {
           </div>
 
           <div
-            // onClick={() => {
-            //   session && router.push("/orders");
-            // }}
+            onClick={() => {
+              currentUser && router.push("/orders");
+            }}
             className="link"
           >
             <p>Returns</p>

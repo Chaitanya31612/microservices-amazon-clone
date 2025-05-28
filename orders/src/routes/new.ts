@@ -32,15 +32,17 @@ router.post(
     }
 
     // Check if user has any existing unexpired orders
-    // const existingOrder = await Order.findOne({
-    //   userId: req.currentUser!.id,
-    //   status: { $in: [OrderStatus.Created, OrderStatus.AwaitingPayment] },
-    //   expiresAt: { $gt: new Date() }
-    // });
+    const existingOrder = await Order.findOne({
+      userId: req.currentUser!.id,
+      status: { $in: [OrderStatus.Created, OrderStatus.AwaitingPayment] },
+      expiresAt: { $gt: new Date() }
+    });
 
-    // if (existingOrder) {
-    //   throw new BadRequestError(`You already have an active order. Please complete or cancel it before creating a new one. Order ID: ${existingOrder.id}`);
-    // }
+    if (existingOrder) {
+      existingOrder.status = OrderStatus.Cancelled;
+      await existingOrder.save();
+      console.log("previous order cancelled")
+    }
 
     // Find all products the user is trying to order
     const products = await Promise.all(
@@ -66,6 +68,7 @@ router.post(
     });
     await order.save();
 
+    console.log("new order created")
     res.status(201).send(order);
   }
 );

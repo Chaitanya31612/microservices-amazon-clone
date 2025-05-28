@@ -24,10 +24,10 @@ build:
         manual:
           - src: "src/**/*.java"
             dest: .
-    - image: chaitanya31/client
-      context: client
-      docker:
-        dockerfile: Dockerfile
+    # - image: chaitanya31/client
+    #   context: client
+    #   docker:
+    #     dockerfile: Dockerfile
       # sync:
       #   manual:
       #     - src: "src/**/*.js"

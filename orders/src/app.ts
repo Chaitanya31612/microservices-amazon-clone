@@ -14,6 +14,7 @@ import { showOrderRouter } from "./routes/show";
 import { indexOrderRouter } from "./routes/index";
 import { deleteOrderRouter } from "./routes/delete";
 import { healthzRouter } from "./routes/healthz";
+import { updateOrderRouter } from "./routes/update";
 
 const app = express();
 app.set("trust proxy", true); // trust traffic from ingress-nginx proxy
@@ -35,6 +36,7 @@ app.use(currentUser); // for authentication and setting of req.currentUser
 
 app.use(indexOrderRouter);
 app.use(newOrderRouter);
+app.use(updateOrderRouter);
 app.use(showOrderRouter);
 app.use(deleteOrderRouter);
 
