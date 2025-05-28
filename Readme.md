@@ -47,6 +47,8 @@ This project is a full-featured e-commerce application with the following servic
    skaffold dev --port-forward
    ```
 
+4. To access it on `amazon.dev`, add the `minikube ip` in `/etc/hosts` file
+
 ### Alternative Commands
 
 - View all services: `minikube service -all`
