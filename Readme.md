@@ -12,6 +12,10 @@ This project is a full-featured e-commerce application with the following servic
 - **Payments Service**: Payment processing with Stripe integration (Node.js/Express)
 - **Client**: Frontend application (Next.js/React)
 
+## Demo Video
+
+[Demo Video](assets/demo-video.mp4)
+
 ## Steps to Run the Project
 
 ### Prerequisites
