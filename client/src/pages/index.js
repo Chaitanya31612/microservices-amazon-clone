@@ -53,12 +53,16 @@ export async function getServerSideProps({ req }) {
   let products = [];
   try {
     const { data } = await axios.get(
-      "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/products",
+      `${process.env.INGRESS_URL}/api/products`,
       {
         headers: req.headers,
       }
     );
     products = data;
+
+    // in getServerSideProps, we can't make requests like this, it is running in the server pod
+    // const { products: productsData } = await axios.get("/api/get-products");
+    // console.log("productsData is", productsData)
   } catch (error) {
     console.error("Error fetching products:", error);
   }

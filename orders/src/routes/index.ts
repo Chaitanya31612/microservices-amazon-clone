@@ -15,4 +15,12 @@ router.get("/api/orders", requireAuth, async (req: Request, res: Response) => {
   res.send({orders, products});
 });
 
+router.get("/api/user-orders", requireAuth, async (req: Request, res: Response) => {
+  const orders = await Order.find({
+    userId: req.currentUser!.id,
+  }).populate("products.product");
+
+  res.send(orders);
+})
+
 export { router as indexOrderRouter };

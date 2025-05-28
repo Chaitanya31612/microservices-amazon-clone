@@ -24,14 +24,17 @@ build:
         manual:
           - src: "src/**/*.java"
             dest: .
-    # - image: chaitanya31/client
-    #   context: client
-    #   docker:
-    #     dockerfile: Dockerfile
-    #   sync:
-    #     manual:
-    #       - src: "src/**/*.js"
-    #         dest: .
+    - image: chaitanya31/client
+      context: client
+      docker:
+        dockerfile: Dockerfile
+      # sync:
+      #   manual:
+      #     - src: "src/**/*.js"
+      #       dest: .
+      # hooks:
+      #   after:
+      #     - command: ["npm", "run", "build"]
     - image: chaitanya31/orders
       context: orders
       docker:

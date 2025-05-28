@@ -22,6 +22,7 @@ const PaymentForm = ({ orderId, total }) => {
 
   // Handle successful token generation
   const handleToken = async (token) => {
+    console.log('token is', token)
     setProcessing(true);
 
     try {
@@ -38,9 +39,9 @@ const PaymentForm = ({ orderId, total }) => {
       setProcessing(false);
 
       // Redirect to success page or order history
-      // setTimeout(() => {
-      //   router.push("/orders");
-      // }, 2000);
+      setTimeout(() => {
+        router.push("/success");
+      }, 2000);
     } catch (err) {
       console.log(err);
       setError(`Payment processing failed: ${err.response?.data?.error || 'Please try again'}`);
@@ -57,7 +58,7 @@ const PaymentForm = ({ orderId, total }) => {
           <StripeCheckout
             token={handleToken}
             stripeKey={STRIPE_KEY}
-            amount={totalWithShipping * 100} // Amount in paise
+            amount={total * 100} // Amount in paise
             name="Amazon Clone"
             description={`Order #${orderId}`}
             currency="INR"
@@ -72,7 +73,7 @@ const PaymentForm = ({ orderId, total }) => {
               className="button w-full"
               disabled={processing}
             >
-              {`Pay ${new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(totalWithShipping)}`}
+              {`Pay ${new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(total)}`}
             </button>
           </StripeCheckout>
         )}
@@ -88,7 +89,7 @@ const PaymentForm = ({ orderId, total }) => {
 
       {succeeded && (
         <div className="text-green-500 text-center p-2 bg-green-50 rounded">
-          Payment successful! Redirecting to your orders...
+          Payment successful!
         </div>
       )}
     </div>

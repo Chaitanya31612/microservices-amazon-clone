@@ -9,8 +9,7 @@ export default async function handler(req, res) {
 
       // Make sure we're calling the orders service with the correct URL
       const { data } = await axios.get(
-        `
-        http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/orders/${orderId}`,
+        `${process.env.INGRESS_URL}/api/orders/${orderId}`,
         {
           headers: req.headers,
         }

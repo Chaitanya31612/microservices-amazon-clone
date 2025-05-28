@@ -15,6 +15,9 @@ spec:
       containers:
       - name: client
         image: chaitanya31/client
+    env:
+      - name: INGRESS_URL
+        value: http://ingress-nginx-controller.ingress-nginx.svc.cluster.local
 ---
 apiVersion: v1
 kind: Service

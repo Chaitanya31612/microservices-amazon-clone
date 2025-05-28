@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     try {
       // Forward request to auth service through ingress-nginx
       const response = await axios.get(
-        "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/users/currentuser",
+        `${process.env.INGRESS_URL}/api/users/currentuser`,
         { headers: req.headers }
       );
 

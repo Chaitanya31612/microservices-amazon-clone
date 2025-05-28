@@ -42,13 +42,14 @@ const checkout = () => {
       });
 
       const order = response.data;
-      
+      const shippingAdded = total < 499 ? 40 : 0;
+
       // Create same order in payments service
       await axios.post('/api/payments/create-order', {
         id: order.id,
         userId: order.userId,
         status: order.status,
-        price: total
+        price: total + shippingAdded
       });
 
       // Redirect to order confirmation page
