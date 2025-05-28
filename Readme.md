@@ -11,6 +11,7 @@ This project is a full-featured e-commerce application with the following servic
 - **Orders Service**: Order management (Node.js/Express/Mongodb)
 - **Payments Service**: Payment processing with Stripe integration (Node.js/Express/Mongodb)
 - **Client**: Frontend application (Next.js/React)
+- **Common NPM package**: [@cgecommerceproject/common](https://www.npmjs.com/package/@cgecommerceproject/common) - Its [Repo Link](https://github.com/Chaitanya31612/common-microservices-amazon-clone)
 
 ## Demo Video
 
