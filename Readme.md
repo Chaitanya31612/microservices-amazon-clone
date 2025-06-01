@@ -58,7 +58,8 @@ https://github.com/user-attachments/assets/03087ff4-92f4-4074-a875-144cff00b150
    skaffold dev --port-forward
    ```
 
-4. To access it on `amazon.dev`, add the `minikube ip` in `/etc/hosts` file
+4. To access it on `amazon.dev`, add the `minikube ip` in `/etc/hosts` file, also make sure minikube has ingress addon
+or add it with `minikube addons enable ingress`
 
 ### Alternative Commands
 

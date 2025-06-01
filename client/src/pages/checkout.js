@@ -37,21 +37,15 @@ const checkout = () => {
       }));
 
       // Create order in orders service
+      // This will automatically trigger a Kafka event that the payments service will consume
       const response = await axios.post('/api/orders', {
-        items: orderItems
+        items: orderItems,
+        // Include total price with shipping in the order creation request
+        price: total + (total < 499 ? 40 : 0) 
       });
 
       const order = response.data;
-      const shippingAdded = total < 499 ? 40 : 0;
-
-      // Create same order in payments service
-      await axios.post('/api/payments/create-order', {
-        id: order.id,
-        userId: order.userId,
-        status: order.status,
-        price: total + shippingAdded
-      });
-
+      
       // Redirect to order confirmation page
       window.location.href = `/confirm-order/${order.id}`;
     } catch (error) {

@@ -27,6 +27,8 @@ spec:
               secretKeyRef:
                 name: stripe-secret
                 key: STRIPE_KEY
+          - name: KAFKA_BROKERS
+            value: "kafka-srv:9092"
 ---
 apiVersion: v1
 kind: Service

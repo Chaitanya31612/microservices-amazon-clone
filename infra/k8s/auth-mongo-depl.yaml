@@ -17,13 +17,13 @@ spec:
         image: chaitanya31/my-mongo
         ports:
         - containerPort: 27017
-        volumeMounts:
-        - name: auth-mongo-storage
-          mountPath: /data/db
-      volumes:
-      - name: auth-mongo-storage
-        persistentVolumeClaim:
-          claimName: auth-mongo-pvc
+        # volumeMounts:
+        # - name: auth-mongo-storage
+        #   mountPath: /data/db
+      # volumes:
+      # - name: auth-mongo-storage
+      #   persistentVolumeClaim:
+      #     claimName: auth-mongo-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -35,15 +35,15 @@ spec:
   ports:
   - port: 27017
     targetPort: 27017
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: auth-mongo-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: auth-mongo-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 1Gi
 

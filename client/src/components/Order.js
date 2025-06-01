@@ -14,7 +14,6 @@ const Order = ({ order }) => {
       case "complete":
         return "bg-green-500";
       case "created":
-      case "awaiting:payment":
         return "bg-yellow-500";
       case "cancelled":
         return "bg-red-500";
@@ -29,8 +28,6 @@ const Order = ({ order }) => {
         return "Completed";
       case "created":
         return "Created";
-      case "awaiting:payment":
-        return "Payment Pending";
       case "cancelled":
         return "Cancelled";
       default:

@@ -28,15 +28,16 @@ const PaymentForm = ({ orderId, total }) => {
 
     try {
       // Process payment through our API
+      // This will automatically publish a payment_succeeded or payment_failed event
+      // that the orders service will consume to update the order status
       const response = await axios.post("/api/payments", {
         token: token.id,
         orderId
       });
       console.log('response is', response);
 
-      await axios.put(`/api/orders/${orderId}`, {
-        status: "complete"
-      })
+      // No need to manually update order status - it will be updated by the event handler
+      // in the orders service when it receives the payment_succeeded event
 
       // dispatch clear cart
       dispatch(clearCart(currentUser?.id));

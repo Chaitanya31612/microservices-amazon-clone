@@ -1,0 +1,29 @@
+#### NOT Required, keeping just for reference, the topics creation is now handled by the kafka-topic-setup.ts
+
+
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   name: kafka-topics-init
+# spec:
+#   ttlSecondsAfterFinished: 100
+#   template:
+#     spec:
+#       containers:
+#       - name: kafka-topics-init
+#         image: bitnami/kafka:latest
+#         command:
+#         - "/bin/bash"
+#         - "-c"
+#         - |
+#           # Wait for Kafka to be ready
+#           sleep 10
+
+#           # Create the Kafka topics
+#           kafka-topics.sh --create --if-not-exists --bootstrap-server kafka-srv:9092 --topic order_created --partitions 1 --replication-factor 1
+#           kafka-topics.sh --create --if-not-exists --bootstrap-server kafka-srv:9092 --topic order_updated --partitions 1 --replication-factor 1
+#           kafka-topics.sh --create --if-not-exists --bootstrap-server kafka-srv:9092 --topic order_cancelled --partitions 1 --replication-factor 1
+#           kafka-topics.sh --create --if-not-exists --bootstrap-server kafka-srv:9092 --topic payment_created --partitions 1 --replication-factor 1
+#           kafka-topics.sh --create --if-not-exists --bootstrap-server kafka-srv:9092 --topic payment_succeeded --partitions 1 --replication-factor 1
+#           kafka-topics.sh --create --if-not-exists --bootstrap-server kafka-srv:9092 --topic payment_failed --partitions 1 --replication-factor 1
+#       restartPolicy: OnFailure

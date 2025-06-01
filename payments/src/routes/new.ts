@@ -6,6 +6,10 @@ import {
   requireAuth,
   validateRequest,
 } from "@cgecommerceproject/common";
+import { PaymentCreatedPublisher } from "../events/publishers/payment-created-publisher";
+import { PaymentSucceededPublisher } from "../events/publishers/payment-succeeded-publisher";
+import { PaymentFailedPublisher } from "../events/publishers/payment-failed-publisher";
+import { kafka } from "../kafka-wrapper";
 import express, { Request, Response } from "express";
 import { body } from "express-validator";
 import { Order } from "../models/order";
@@ -44,8 +48,6 @@ router.post(
       throw new BadRequestError("Order is already cancelled or completed");
     }
 
-    order.status = OrderStatus.AwaitingPayment;
-    await order.save();
 
     try {
       // Create a charge using the token from Stripe Checkout
@@ -83,6 +85,25 @@ router.post(
 
       console.log("payment created");
 
+      // Publish payment succeeded event
+      try {
+        const succeededPublisher = new PaymentSucceededPublisher(kafka.client);
+        // Connect the producer before publishing
+        await succeededPublisher.connect();
+
+        await succeededPublisher.publish({
+          id: payment.id,
+          orderId: payment.orderId,
+          stripeId: payment.stripeId
+        });
+
+        // Optionally disconnect the producer after publishing
+        // await succeededPublisher.disconnect();
+      } catch (err) {
+        console.error('Error publishing payment succeeded event:', err);
+        // Continue with the process even if publishing fails
+      }
+
       // update order from orders service, will be doing with async events later, right now doing call to orders-srv
       // not needed to wait for the response
       // console.log("updating order status")
@@ -98,6 +119,29 @@ router.post(
       });
     } catch (err) {
       console.log("Something went wrong", err);
+
+      // Update order status to failed
+      order.status = OrderStatus.Cancelled;
+      await order.save();
+
+      // Publish payment failed event
+      try {
+        const failedPublisher = new PaymentFailedPublisher(kafka.client);
+        // Connect the producer before publishing
+        await failedPublisher.connect();
+
+        await failedPublisher.publish({
+          orderId: orderId,
+          errorMessage: err.message
+        });
+
+        // Optionally disconnect the producer after publishing
+        // await failedPublisher.disconnect();
+      } catch (publishErr) {
+        console.error('Error publishing payment failed event:', publishErr);
+        // Continue with the process even if publishing fails
+      }
+
       res.status(400).send({ error: err.message });
     }
   }

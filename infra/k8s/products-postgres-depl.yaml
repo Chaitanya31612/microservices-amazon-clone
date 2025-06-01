@@ -30,13 +30,13 @@ spec:
             secretKeyRef:
               name: products-secrets
               key: POSTGRES_PASSWORD
-        volumeMounts:
-        - name: products-postgres-storage
-          mountPath: /var/lib/postgresql/data
-      volumes:
-      - name: products-postgres-storage
-        persistentVolumeClaim:
-          claimName: products-postgres-pvc
+      #   volumeMounts:
+      #   - name: products-postgres-storage
+      #     mountPath: /var/lib/postgresql/data
+      # volumes:
+      # - name: products-postgres-storage
+      #   persistentVolumeClaim:
+      #     claimName: products-postgres-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -49,13 +49,13 @@ spec:
   - port: 5432
     targetPort: 5432
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: products-postgres-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: products-postgres-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 1Gi

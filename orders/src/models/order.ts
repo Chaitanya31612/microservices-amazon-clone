@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { OrderStatus } from "@cgecommerceproject/common";
+import { updateIfCurrentPlugin } from "mongoose-update-if-current";
 
 export { OrderStatus };
 
@@ -92,7 +93,11 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
+// Configure optimistic concurrency control
+// This sets the field name that will track the version number
 orderSchema.set("versionKey", "version");
+// Apply the plugin that handles incrementing the version on document updates
+orderSchema.plugin(updateIfCurrentPlugin);
 
 orderSchema.statics.build = (attrs: OrderAttrs) => {
   return new Order(attrs);
