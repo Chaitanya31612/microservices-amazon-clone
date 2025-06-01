@@ -1,6 +1,6 @@
 # Microservices E-Commerce Platform
 
-A comprehensive e-commerce platform built with microservices architecture using Kubernetes, Docker, and multiple programming languages.
+A comprehensive e-commerce platform built with microservices architecture using Kubernetes, Docker, Kafka for event-driven communication, and multiple programming languages.
 
 ## Project Overview
 
@@ -8,8 +8,8 @@ This project is a full-featured e-commerce application with the following servic
 - **Auth Service**: User authentication and authorization (Node.js/Express/Mongodb)
 - **Products Service**: Product catalog management (Spring Boot/Java/Postgresql)
 - **Cart Service**: Shopping cart functionality (Go/Redis)
-- **Orders Service**: Order management (Node.js/Express/Mongodb)
-- **Payments Service**: Payment processing with Stripe integration (Node.js/Express/Mongodb)
+- **Orders Service**: Order management with Kafka integration (Node.js/Express/Mongodb)
+- **Payments Service**: Payment processing with Stripe integration and Kafka messaging (Node.js/Express/Mongodb)
 - **Client**: Frontend application (Next.js/React)
 - **Common NPM package**: [@cgecommerceproject/common](https://www.npmjs.com/package/@cgecommerceproject/common) - Its [Repo Link](https://github.com/Chaitanya31612/common-microservices-amazon-clone)
 
@@ -30,6 +30,7 @@ https://github.com/user-attachments/assets/03087ff4-92f4-4074-a875-144cff00b150
 - Skaffold installed
 - Minikube installed (for local development)
 - Stripe account (for payment processing)
+- Kafka cluster (for inter-service communication)
 
 ### Setup Instructions
 
@@ -103,13 +104,19 @@ or add it with `minikube addons enable ingress`
 ## Common Shared Library
 
 ### Overview
-- A common shared library is used across different services for shared functionality.
+- A common shared library is used across different services for shared functionality and event definitions.
 - It is published on npm under the organization and name `@cgecommerceproject/common`.
+- Contains Kafka wrapper and event interfaces for inter-service communication.
 
 ### Usage
 - Install the library in other projects using `npm install @cgecommerceproject/common`.
 - After updates, publish the library using `npm publish --access public`.
 - Update the library in other projects with `npm update @cgecommerceproject/common`.
+
+### Kafka Integration
+- The common library provides a `KafkaWrapper` class that implements the singleton pattern for managing Kafka clients.
+- Event interfaces are defined for different types of events (OrderCreated, OrderUpdated, PaymentCreated, etc.).
+- Services can use the common library to publish and subscribe to events.
 
 ## Auth Service Documentation
 
@@ -138,12 +145,13 @@ The Auth service is responsible for handling authentication and authorization wi
 ### Security
 - JWTs are used for secure authentication.
 - Ensure the `JWT_KEY` environment variable is set for token signing.
+- The service communicates with other services indirectly through Kafka events.
 
 
 ## Products Service Documentation
 
 ### Overview
-The Products service manages product data and operations. It is built using Spring Boot and Java, leveraging Spring Data JPA for database interactions.
+The Products service is responsible for managing product data and operations. It is built using Spring Boot and Java, leveraging Spring Data JPA for database interactions.
 
 ### Key Features
 - RESTful API for product management.
@@ -245,9 +253,81 @@ The Orders and Payments services are separate microservices that handle order ma
 - User authorization checks for payment operations
 - Maintains its own copy of order data for payment processing
 
+## Event-Driven Architecture and Asynchronous Communication
+
+### Why Asynchronous Communication?
+
+This project implements an event-driven architecture using Kafka for asynchronous communication between microservices. This approach provides several benefits:
+
+1. **Service Decoupling**: Services can operate independently without direct dependencies on each other's availability.
+
+2. **Data Consistency**: Each service maintains its own data store, and data is kept consistent across services through events.
+
+3. **Scalability**: Services can scale independently based on their specific load requirements.
+
+4. **Fault Tolerance**: If one service fails, other services can continue to operate, and events are processed when the failed service recovers.
+
+5. **Eventual Consistency**: The system achieves consistency over time as events are processed, even if immediate consistency isn't guaranteed.
+
+### Kafka Implementation
+
+#### Infrastructure
+- Kafka brokers are deployed as part of the Kubernetes infrastructure
+- Services connect to Kafka using the common library's `KafkaWrapper` class
+- Topics are created for different event types (orders, payments, etc.)
+
+#### Event Flow Examples
+
+1. **Order Creation Flow**:
+   - User creates an order through the client application
+   - Orders service stores the order and publishes an `OrderCreated` event
+   - Payments service consumes the `OrderCreated` event and prepares for payment processing
+
+2. **Payment Processing Flow**:
+   - User makes a payment through the Stripe integration
+   - Payments service processes the payment and publishes a `PaymentSucceeded` or `PaymentFailed` event
+   - Orders service consumes these events and updates the order status accordingly
+
+3. **Order Cancellation Flow**:
+   - User or system cancels an order
+   - Orders service updates the order status to cancelled and publishes an `OrderUpdated` event
+   - Payments service consumes the event, checks the status, and cancels any pending payment processes if the status is cancelled
+
+### Kafka Configuration
+
+The Kafka implementation uses the following configuration:
+
+- **Client ID**: Each service has a unique client ID for connecting to Kafka
+- **Consumer Groups**: Services are organized into consumer groups to ensure events are processed by the appropriate services
+- **Topics**: Different topics are used for different event types to organize the event flow
+- **Brokers**: Kafka brokers are deployed in the Kubernetes cluster and accessible to all services
+
+#### Kafka Async processing example
+
+- Existing order gets cancelled and new order gets created, along with corresponding events listened by payments service
+```
+[orders] previous order cancelled
+[orders] Event published to topic order_updated
+[payments] Message received from order_updated / payments-order-updated-group
+[payments] Order 683c98802cf5306f4ca232d4 updated in payments service
+[orders] new order created
+[orders] Event published to topic order_created
+[payments] Message received from order_created / payments-order-created-group
+[orders] POST /api/orders 201 1661 - 32.740 ms
+[payments] Order created in payments service: 683c98972cf5306f4ca232e8
+```
+
+- Payment is successful and corresponding event listened by orders service and updating its order to completed
+```
+[payments] payment created
+[payments] Event published to topic payment_succeeded
+[orders] Message received from payment_succeeded / orders-payment-succeeded-group
+[orders] Order 683c98972cf5306f4ca232e8 marked as complete after successful payment
+```
+
 ### Checkout Flow
 
-The application implements a complete checkout flow with Stripe integration:
+The application implements a complete checkout flow with Stripe integration and Kafka event processing:
 
 1. **Checkout Process**:
    - User adds products to cart
