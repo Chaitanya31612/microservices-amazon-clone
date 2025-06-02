@@ -413,7 +413,6 @@ The application implements a complete checkout flow with Stripe integration and 
 1. **Configuration**:
    - The Payments service uses the Stripe Node.js SDK
    - Requires a valid Stripe API key stored in Kubernetes secrets
-   - Uses Stripe API version "2025-04-30.basil"
    - Frontend uses `react-stripe-checkout` package for the checkout form
 
 2. **Payment Flow**:
