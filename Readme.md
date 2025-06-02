@@ -281,7 +281,7 @@ This project implements an event-driven architecture using Kafka for asynchronou
 1. **Order Creation Flow**:
    - User creates an order through the client application
    - Orders service stores the order and publishes an `OrderCreated` event
-   - Payments service consumes the `OrderCreated` event and prepares for payment processing
+   - Payments service consumes the `OrderCreated` event and creates order record in its order collection
 
 2. **Payment Processing Flow**:
    - User makes a payment through the Stripe integration
@@ -289,18 +289,9 @@ This project implements an event-driven architecture using Kafka for asynchronou
    - Orders service consumes these events and updates the order status accordingly
 
 3. **Order Cancellation Flow**:
-   - User or system cancels an order
+   - User or system cancels an order, like if created an order and not proceeded with payment.
    - Orders service updates the order status to cancelled and publishes an `OrderUpdated` event
-   - Payments service consumes the event, checks the status, and cancels any pending payment processes if the status is cancelled
-
-### Kafka Configuration
-
-The Kafka implementation uses the following configuration:
-
-- **Client ID**: Each service has a unique client ID for connecting to Kafka
-- **Consumer Groups**: Services are organized into consumer groups to ensure events are processed by the appropriate services
-- **Topics**: Different topics are used for different event types to organize the event flow
-- **Brokers**: Kafka brokers are deployed in the Kubernetes cluster and accessible to all services
+   - Payments service consumes the event, checks the status, and cancels the order in its collection
 
 #### Kafka Async processing example
 
@@ -324,6 +315,15 @@ The Kafka implementation uses the following configuration:
 [orders] Message received from payment_succeeded / orders-payment-succeeded-group
 [orders] Order 683c98972cf5306f4ca232e8 marked as complete after successful payment
 ```
+
+### Kafka Configuration
+
+The Kafka implementation uses the following configuration:
+
+- **Client ID**: Each service has a unique client ID for connecting to Kafka
+- **Consumer Groups**: Services are organized into consumer groups to ensure events are processed by the appropriate services
+- **Topics**: Different topics are used for different event types to organize the event flow
+- **Brokers**: Kafka brokers are deployed in the Kubernetes cluster and accessible to all services
 
 ### Checkout Flow
 
